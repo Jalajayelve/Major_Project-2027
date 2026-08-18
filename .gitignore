@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.pytest_cache/
+*.sqlite3
+.DS_Store
+*.log
+
+# Notebook outputs
+.ipynb_checkpoints/
+
+# Local model files (keep if they are intentionally tracked)
+# *.pkl
