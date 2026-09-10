@@ -1,1 +1,0 @@
-"""StudyPath Reflex application."""
