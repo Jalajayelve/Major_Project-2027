@@ -1,0 +1,8 @@
+@"
+.web/
+.states/
+__pycache__/
+*.pyc
+.venv/
+uploaded_files/
+"@ | Out-File -Encoding utf8 .gitignore
