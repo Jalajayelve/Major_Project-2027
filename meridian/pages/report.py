@@ -21,8 +21,6 @@ def _page(no: str, title: str, body, eyebrow: str):
 
 
 def report_page():
-    ps = mock.PROFILE_STRENGTH
-    top3 = [u for u in sorted(mock.UNIVERSITIES, key=lambda u: -u["prob"])[:3]]
     cover = rx.el.section(
         watermark(420),
         rx.el.div(
@@ -36,10 +34,10 @@ def report_page():
                 class_name="row wrap", style={"gap": "44px", "marginTop": "32px"},
             ),
             rx.el.hr(class_name="rule", style={"margin": "48px 0 28px"}),
-            rx.el.div(label("Profile strength"), rx.el.p(str(ps["score"]), class_name="num-key", style={"fontSize": "84px", "marginTop": "8px"})),
+            rx.el.div(label("Profile strength"), rx.el.p(State.agent7_score, class_name="num-key", style={"fontSize": "84px", "marginTop": "8px"})),
             rx.el.div(
                 label("Top recommendations"),
-                *[rx.el.div(rx.el.span(u["name"]), rx.el.span(u["prob_str"], class_name="num-key", style={"fontSize": "20px"}), class_name="kv-row") for u in top3],
+                R.university_matches(),
                 style={"marginTop": "28px"},
             ),
             rx.el.div(rx.el.span("Prepared", class_name="mono"), rx.el.span(f"Report no. {mock.build_report()['student']['report_no']}", class_name="mono"), class_name="row between", style={"marginTop": "60px"}),
@@ -60,12 +58,13 @@ def report_page():
                     ),
                     class_name="row wrap between no-print", style={"gap": "20px", "maxWidth": "820px", "margin": "0 auto 36px"},
                 ),
+                rx.el.p(State.analysis_scope, class_name="body", style={"maxWidth": "820px", "margin": "0 auto 20px"}),
                 cover,
                 _page("01", "University recommendations", R.admission_probability(), "Recommendations"),
-                _page("02", "Program matches", R.programs_table(), "Programs"),
-                _page("03", "Cost breakdown", R.financial(), "Financial"),
-                _page("04", "Scholarships", R.scholarships(), "Funding"),
-                _page("05", "Career alignment", R.career(), "Career"),
+                _page("02", "Program matches ? Demonstration", R.programs_table(), "Programs"),
+                _page("03", "Cost breakdown ? Demonstration", R.financial(), "Financial"),
+                _page("04", "Scholarships ? Demonstration", R.scholarships(), "Funding"),
+                _page("05", "Career alignment ? Demonstration", R.career(), "Career"),
                 _page("06", "Profile strength", R.profile_strength(), "Profile"),
                 _page("07", "Extracurricular strength", R.extracurricular(), "Beyond grades"),
                 _page("08", "Key model factors", R.key_factors(), "Explainability"),

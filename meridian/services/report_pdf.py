@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 from pathlib import Path
 from typing import Any
+from xml.sax.saxutils import escape
 
 from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
@@ -67,39 +68,47 @@ def render_report_pdf(report: dict[str, Any]) -> bytes:
     w, h = A4
     doc.addPageTemplates([PageTemplate(id="p", frames=[Frame(20 * mm, 16 * mm, w - 40 * mm, h - 44 * mm, id="f")], onPage=_page)])
     s = report["student"]
-    P = lambda t, st="cell": Paragraph(str(t), _S[st])  # noqa: E731
+    P = lambda t, st="cell": Paragraph(escape(str(t)), _S[st])  # noqa: E731
     H = lambda t: Paragraph(t, _S["head"])  # noqa: E731
     W = w - 40 * mm
     el = [Spacer(1, 4 * mm), Paragraph("YOUR PERSONAL DOSSIER", _S["eyebrow"]),
-          Paragraph(s["name"], ParagraphStyle("n", fontName="Times-Bold", fontSize=30, leading=34, textColor=INK)), Spacer(1, 3 * mm),
+          Paragraph(escape(s["name"]), ParagraphStyle("n", fontName="Times-Bold", fontSize=30, leading=34, textColor=INK)), Spacer(1, 3 * mm),
           _table([[H("TARGET"), H("PROGRAM"), H("INTAKE")], [P(s["target"]), P(s["program"]), P(s["intake"])]], [W / 3] * 3)]
 
+    el += [P("Agent 7 uses real model inference. Agent 2 results require its complete updated bundle. Program, financial, scholarship and career sections below remain demonstration data.", "body")]
     ps = report["profile_strength"]
     el += _section("Profile strength", "01")
     el += [Paragraph(f"{ps['score']} / 100 - {ps['label']}", _S["key"]), Spacer(1, 2 * mm),
            _table([[H("DIMENSION"), H("SCORE")]] + [[P(d["name"]), P(d["score"])] for d in ps["dimensions"]], [W * .7, W * .3])]
 
-    el += _section("University recommendations", "02")
-    el += [_table([[H("UNIVERSITY"), H("PROGRAM"), H("TIER"), H("ADMIT"), H("TUITION")]] +
-                  [[P(u["name"]), P(u["program"]), P(u["tier"]), P(u["prob_str"]), P(u["tuition_str"])] for u in report["universities"]],
-                  [W * .32, W * .26, W * .14, W * .12, W * .16])]
+    if report.get("agent7_notice"):
+        el += [P(report["agent7_notice"], "body")]
 
-    el += _section("Program matches", "03")
+    el += _section("University recommendations", "02")
+    if report.get("agent2_notice"):
+        el += [P(report["agent2_notice"], "body"), Spacer(1, 2 * mm)]
+    el += [_table([[H("UNIVERSITY"), H("PROGRAM"), H("EXPERIMENTAL BAND"), H("UNVALIDATED MODEL SCORE"), H("TUITION")]] +
+                  [[P(u["name"]), P(u["program"] + (" — " + u["evidence_reason"] if u.get("evidence_reason") else "")), P(u["tier"]), P(u["prob_str"]), P(u["tuition_str"])] for u in report["universities"]],
+                  [W * .32, W * .26, W * .14, W * .12, W * .16])]
+    if not report["universities"]:
+        el += [P("Run analysis to generate current experimental matches and scores.", "body")]
+
+    el += _section("Program matches - demonstration", "03")
     el += [_table([[H("UNIVERSITY"), H("PROGRAM"), H("MATCH"), H("DURATION")]] +
                   [[P(p["university"]), P(p["program"]), P(p["match"]), P(p["duration"])] for p in report["programs"]],
                   [W * .22, W * .38, W * .14, W * .26])]
 
     f = report["financial"]
-    el += _section("Cost breakdown", "04")
+    el += _section("Cost breakdown - demonstration", "04")
     el += [Paragraph(f"{f['total_str']} per year", _S["key"]), P(f"Budget {f['budget_str']}  |  {f['gap_str']}"), Spacer(1, 2 * mm),
            _table([[H("ITEM"), H("ESTIMATE")]] + [[P(i["name"]), P(i["amount"])] for i in f["items"]], [W * .7, W * .3])]
 
-    el += _section("Scholarships", "05")
+    el += _section("Scholarships - demonstration", "05")
     el += [_table([[H("AWARD"), H("VALUE"), H("FIT")]] + [[P(x["name"]), P(x["value"]), P(x["fit"])] for x in report["scholarships"]],
                   [W * .5, W * .32, W * .18])]
 
     c = report["career"]
-    el += _section("Career alignment", "06")
+    el += _section("Career alignment - demonstration", "06")
     el += [P(c["summary"], "body"), Spacer(1, 2 * mm),
            _table([[H("ROLE"), H("FIT"), H("SALARY RANGE")]] + [[P(r["role"]), P(f"{r['fit']}%"), P(r["salary"])] for r in c["roles"]],
                   [W * .5, W * .15, W * .35])]
@@ -109,6 +118,7 @@ def render_report_pdf(report: dict[str, Any]) -> bytes:
     el += [_table([[H("AREA"), H("SCORE")]] + [[P(i["name"]), P(i["score"])] for i in e["items"]], [W * .7, W * .3])]
 
     el += _section("Key model factors", "08")
+    el += [P("SHAP factors, when available, describe the uncalibrated classifier. They do not explain the calibrated estimate or measure admission percentage points.", "body")]
     el += [_table([[H("FACTOR"), H("IMPACT")]] + [[P(k["name"]), P(k["impact"])] for k in report["key_factors"]], [W * .75, W * .25]),
            Spacer(1, 4 * mm), P("Figures are illustrative estimates generated for demonstration and are not a guarantee of admission or funding.", "body")]
     doc.build(el)

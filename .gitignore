@@ -8,6 +8,8 @@ __pycache__/
 *.pyo
 *.pyd
 .venv/
+.venv-agent2/
+.runtime/
 venv/
 .env
 .pytest_cache/

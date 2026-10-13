@@ -38,6 +38,9 @@ STUDENT_PROFILE: dict[str, str] = {
     "internships": "2",
     "research": "1 conference paper, 1 ongoing project",
     "projects": "Built a demand-forecasting service used by 3 internal teams. Open-source contributor to a data-validation library.",
+    # Agent 7 requires explicit structured inputs; no sample or inferred defaults.
+    "leadership_score": "", "research_score": "", "competition_score": "", "volunteering_score": "",
+    "publication_count": "", "patent_count": "", "agent7_degree_level": "", "agent7_field": "",
     # goals
     "degree_goal": "MS",
     "field": "Computer Science",
@@ -91,6 +94,14 @@ FORM_SCHEMA: list[dict[str, Any]] = [
         _F("internships", "Internships completed"),
         _F("research", "Research and publications", wide=True),
         _F("projects", "Projects and leadership", "textarea", "Two or three lines is enough", wide=True),
+        _F("leadership_score", "Agent 7 · Leadership score (0–10)", "number", "Unknown? Leave blank"),
+        _F("research_score", "Agent 7 · Research score (0–10)", "number", "Unknown? Leave blank"),
+        _F("competition_score", "Agent 7 · Competition score (0–10)", "number", "Unknown? Leave blank"),
+        _F("volunteering_score", "Agent 7 · Volunteering score (0–10)", "number", "Unknown? Leave blank"),
+        _F("publication_count", "Agent 7 · Publication count", "number", "Enter a known count, including 0"),
+        _F("patent_count", "Agent 7 · Patent count", "number", "Enter a known count, including 0"),
+        _F("agent7_degree_level", "Agent 7 · Degree level", "select", options=["", "Bachelors", "Masters", "PhD-applicant"]),
+        _F("agent7_field", "Agent 7 · Broad field", "select", options=["", "STEM", "Business", "SocialSci", "Arts", "Other"]),
     ]},
     {"id": "goals", "label": "Study goals", "fields": [
         _F("degree_goal", "Degree", "select", options=["MS", "MBA"]),

@@ -60,7 +60,7 @@ def documents_page():
                 rx.el.div(
                     label("Step 2 of 4", "blue"),
                     rx.el.h1("Admissions desk", class_name="h1", style={"marginTop": "10px"}),
-                    rx.el.p("Add the documents the agents should read. Nothing is required, but each one sharpens your results.", class_name="lede", style={"marginTop": "14px"}),
+                    rx.el.p("Documents are optional. Agent 7 currently uses your structured profile inputs; uploaded resumes and SOPs are not parsed or scored in this flow.", class_name="lede", style={"marginTop": "14px"}),
                     class_name="page-enter", style={"marginBottom": "40px"},
                 ),
                 rx.el.div(

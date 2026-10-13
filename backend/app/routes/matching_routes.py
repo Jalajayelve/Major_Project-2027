@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from app.agents.matching_agent.match import match_universities
+from app.agents.university_matching_agent.match import match_universities
 
 router = APIRouter()
 

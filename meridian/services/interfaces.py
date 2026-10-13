@@ -17,7 +17,7 @@ AgentId = Literal[
 class AgentEvent(TypedDict, total=False):
     """One message on the agent-progress channel.
 
-    type      "<agent>_processing" | "<agent>_completed"
+    type      "<agent>_processing" | "<agent>_completed" | "<agent>_unavailable"
     agent     the agent id, e.g. "university"
     progress  0.0-1.0 while processing (optional)
     payload   agent result on completion (LangGraph state slice), optional

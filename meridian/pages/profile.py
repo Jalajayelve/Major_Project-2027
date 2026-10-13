@@ -15,7 +15,7 @@ def _field(f: dict):
     if kind == "select":
         opts = list(f["options"])
         control = rx.el.select(
-            *[rx.el.option(o, value=o) for o in opts],
+            *[rx.el.option(o or "Select explicitly…", value=o) for o in opts],
             default_value=mock.STUDENT_PROFILE.get(key, opts[0]),
             value=State.profile[key],
             on_change=_on_change(key),
@@ -27,9 +27,13 @@ def _field(f: dict):
             on_blur=_on_change(key), class_name="input", id=f"f-{key}",
         )
     else:
+        # Reflex's number control converts an empty string to 0. Keep raw text
+        # so missing evidence stays missing; the service validates the range.
+        numeric = {"input_mode": "decimal" if key.endswith("_score") else "numeric"} if kind == "number" else {}
         control = rx.el.input(
-            default_value=State.profile[key], placeholder=f["placeholder"], type=kind,
+            default_value=State.profile[key], placeholder=f["placeholder"], type="text" if kind == "number" else kind,
             on_blur=_on_change(key), class_name="input", id=f"f-{key}",
+            **numeric,
         )
     return rx.el.div(
         rx.el.label(f["label"], html_for=f"f-{key}", class_name="field-label"),
@@ -48,6 +52,7 @@ def _panel(i: int, section: dict):
                 style={"margin": "8px 0 28px"},
             ),
             rx.el.div(*[_field(f) for f in section["fields"]], class_name="form-grid"),
+            *([rx.el.p("Agent 7 requires all eight structured values above. Scores are supplied on a 0–10 rubric scale, not extracted from your documents. Select the applicable degree category and broad field explicitly. Leave unknowns blank; scoring will wait for them. Zero means a known absence. Self-reported inputs are not independently verified.", class_name="body", style={"marginTop": "20px"})] if section["id"] == "experience" else []),
             key=section["id"], class_name="page-enter",
         ),
         rx.fragment(),
@@ -97,14 +102,22 @@ def profile_page():
                     rx.el.div(
                         rx.el.div(*[_tab(i, s) for i, s in enumerate(mock.FORM_SCHEMA)], class_name="tabs", role="tablist"),
                         rx.el.div(
+                            rx.cond(State.agent7_error != "", rx.el.div(
+                                rx.el.p("Your profile has not been submitted yet.", style={"fontWeight": "600"}),
+                                rx.el.p(State.agent7_error, class_name="body"),
+                                rx.el.p("Correct the required fields using the section tabs, then click Continue to documents again. You do not need to repeat the sections.", class_name="body"),
+                                rx.el.button("Review Experience fields", on_click=State.set_tab(next(i for i, s in enumerate(mock.FORM_SCHEMA) if s["id"] == "experience")), type="button", class_name="btn-ghost"),
+                                role="alert", custom_attrs={"data-testid": "profile-submission-error"},
+                                style={"padding": "20px", "marginBottom": "24px", "border": "1px solid var(--accent)"},
+                            ), rx.fragment()),
                             *[_panel(i, s) for i, s in enumerate(mock.FORM_SCHEMA)],
                             rx.el.div(
                                 rx.el.button("Back", on_click=State.prev_tab, type="button", class_name="btn-ghost",
                                              style={"visibility": rx.cond(State.profile_tab == 0, "hidden", "visible")}),
                                 rx.el.button(
-                                    rx.el.span(rx.cond(State.profile_tab == len(mock.FORM_SCHEMA) - 1, "Continue to documents", "Next section")),
+                                    rx.el.span(rx.cond(State.agent7_busy, "Scoring Agent 7…", rx.cond((State.profile_tab == len(mock.FORM_SCHEMA) - 1) | State.profile_submission_attempted, "Continue to documents", "Next section"))),
                                     rx.el.span("→", class_name="tab-arrow"),
-                                    on_click=State.next_tab, type="button", class_name="tab-button",
+                                    on_click=State.next_tab, type="button", class_name="tab-button", disabled=State.agent7_busy,
                                 ),
                                 class_name="row between", style={"marginTop": "40px", "paddingTop": "24px", "borderTop": "1px solid var(--rule)"},
                             ),

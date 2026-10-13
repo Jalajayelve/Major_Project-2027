@@ -38,11 +38,11 @@ def fallback_svg(dark_surface: bool = False) -> str:
 
 
 def globe3d(mode: str, class_name: str = "", spin: str = "auto", arcs: str = "all", select: bool = False,
-            drag: bool = False, dark_surface: bool = False, **kw):
+            drag: bool = False, dark_surface: bool = False, destinations: list[dict] | None = None, **kw):
     return rx.el.div(
         rx.el.div(rx.html(fallback_svg(dark_surface)), class_name="globe-fallback"),
         rx.el.canvas(custom_attrs={
-            "data-globe": mode, "data-unis": unis_json(), "data-arcs": arcs, "data-spin": spin,
+            "data-globe": mode, "data-unis": unis_json() if destinations is None else json.dumps(destinations), "data-arcs": arcs, "data-spin": spin,
             "data-select": "1" if select else "0", "data-drag": "1" if drag else "0",
         }),
         class_name=f"globe3d {class_name}".strip(), **kw,

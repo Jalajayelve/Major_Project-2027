@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,8 @@ import reflex as rx
 
 from .data import mock
 from .services import get_event_source, get_report_service
+from .services.agent7 import Agent7Service, Agent7Unavailable, candidate_from_profile, NOTICE
+from .services.agent2 import Agent2Service, Agent2Unavailable, NOTICE as AGENT2_NOTICE, validate_result as validate_agent2_result
 
 _SECTION_COUNT = len(mock.FORM_SCHEMA)
 
@@ -20,6 +23,14 @@ class State(rx.State):
     # profile
     profile: dict[str, str] = dict(mock.STUDENT_PROFILE)
     profile_tab: int = 0
+    profile_submission_attempted: bool = False
+    agent7_result: dict[str, Any] = {}
+    agent7_inputs: dict[str, Any] = {}
+    agent7_error: str = ""
+    agent7_busy: bool = False
+    agent2_result: dict[str, Any] = {}
+    agent2_error: str = ""
+    agent2_profile: dict[str, str] = {}
 
     # documents  (keys: "<slot>_name", "<slot>_type", "<slot>_size")
     docs: dict[str, str] = {}
@@ -47,17 +58,50 @@ class State(rx.State):
     # ── profile ────────────────────────────────────────────────────────────
     @rx.event
     def set_field(self, key: str, value: str):
+        if self.profile.get(key) == value:
+            return
         self.profile[key] = value
+        self.agent7_result = {}
+        self.agent7_inputs = {}
+        self.agent7_error = ""
+        self.agent2_result = {}
+        self.agent2_error = ""
+        self.agent2_profile = {}
+        self.agents = [dict(a) for a in mock.AGENTS]
 
     @rx.event
     def set_tab(self, index: int):
         self.profile_tab = max(0, min(index, _SECTION_COUNT - 1))
 
     @rx.event
-    def next_tab(self):
-        if self.profile_tab >= _SECTION_COUNT - 1:
-            return rx.redirect("/documents")
-        self.profile_tab += 1
+    async def next_tab(self):
+        if self.profile_tab >= _SECTION_COUNT - 1 or self.profile_submission_attempted:
+            if self.agent7_busy:
+                return
+            self.agent7_busy = True
+            self.profile_submission_attempted = True
+            self.agent7_error = ""
+            self.agent7_result = {}
+            self.agent2_result = {}
+            self.agent2_profile = {}
+            self.agent2_error = ""
+            yield
+            try:
+                profile = dict(self.profile)
+                candidate = candidate_from_profile(profile)
+                result = await asyncio.to_thread(Agent7Service().score_profile, profile)
+                if dict(self.profile) != profile:
+                    raise ValueError("Profile changed during scoring. Submit your updated profile again.")
+                self.agent7_result = result
+                self.agent7_inputs = candidate
+                yield rx.redirect("/documents")
+            except (ValueError, Agent7Unavailable) as exc:
+                self.agent7_error = str(exc)
+                logging.getLogger(__name__).warning("Agent 7 submission failed", exc_info=True)
+            finally:
+                self.agent7_busy = False
+        else:
+            self.profile_tab += 1
 
     @rx.event
     def prev_tab(self):
@@ -145,17 +189,65 @@ class State(rx.State):
             self.agents = [dict(a) for a in mock.AGENTS]
             self.event_log = []
             profile = dict(self.profile)
-        # Replace get_event_source() with the WebSocket client to go live.
-        async for event in get_event_source().stream(profile):
+            self.agent7_error = ""
+            result = dict(self.agent7_result)
+            saved_inputs = dict(self.agent7_inputs)
+            university_result = dict(self.agent2_result) if self.agent2_ready and self.agent2_profile == profile else {}
+            self.agent2_error = ""
+            self.agent2_result = {}
+            self.agent2_profile = {}
+        try:
+            candidate = candidate_from_profile(profile)
+            if not result or candidate != saved_inputs:
+                result = await asyncio.to_thread(Agent7Service().score_profile, profile)
+            university_error = ""
             async with self:
-                self._apply_event(event)
-        async with self:
-            self.agents_running = False
+                self._apply_event({"type": "university_processing", "agent": "university", "progress": 0})
+            try:
+                if not university_result:
+                    university_result = await asyncio.to_thread(Agent2Service().match_profile, profile, result)
+            except (ValueError, Agent2Unavailable) as exc:
+                university_error = str(exc)
+                logging.getLogger(__name__).warning("Agent 2 analysis unavailable: %s", exc)
+            # Only Agents 1, 3, 4, 5 and 6 retain demonstration events.
+            async for event in get_event_source().stream(profile):
+                if event["agent"] in ("extracurricular", "university"):
+                    continue
+                async with self:
+                    self._apply_event(event)
+            async with self:
+                if dict(self.profile) != profile:
+                    raise ValueError("Profile changed during analysis. Return to the profile and submit again.")
+                self.agent7_result = result
+                self.agent7_inputs = candidate
+                self._apply_event({"type": "extracurricular_completed", "agent": "extracurricular", "payload": result})
+                self.agent2_error = university_error
+                if university_error:
+                    self._apply_event({"type": "university_unavailable", "agent": "university"})
+                else:
+                    self.agent2_result = university_result
+                    self.agent2_profile = profile
+                    self._apply_event({"type": "university_completed", "agent": "university", "payload": university_result})
+        except (ValueError, Agent7Unavailable) as exc:
+            async with self:
+                self.agent7_error = str(exc)
+                self.agent7_result = {}
+                self.agent7_inputs = {}
+                self.agent2_result = {}
+                self.agent2_profile = {}
+                self.agent2_error = "Agent 2 waits for a valid Agent 7 result and an unchanged profile."
+                self.event_log = ["Agent 7 unavailable — no result generated"]
+            logging.getLogger(__name__).warning("Agent 7 analysis failed", exc_info=True)
+        finally:
+            async with self:
+                self.agents_running = False
 
     def _apply_event(self, event: dict[str, Any]):
         agents = [dict(a) for a in self.agents]
         i = mock.AGENT_IDS.index(event["agent"])
-        if event["type"].endswith("_completed"):
+        if event["type"].endswith("_unavailable"):
+            agents[i]["status"], agents[i]["progress"] = "unavailable", 0
+        elif event["type"].endswith("_completed"):
             agents[i]["status"], agents[i]["progress"] = "completed", 100
         else:
             agents[i]["status"] = "processing"
@@ -166,7 +258,75 @@ class State(rx.State):
 
     @rx.var
     def agents_done(self) -> bool:
-        return all(a["status"] == "completed" for a in self.agents)
+        return bool(self.agent7_result) and not self.agents_running and all(a["status"] in ("completed", "unavailable") for a in self.agents)
+
+    @rx.var
+    def agent2_ready(self) -> bool:
+        try:
+            validate_agent2_result(self.agent2_result)
+            return True
+        except (ValueError, TypeError, KeyError):
+            return False
+
+    @rx.var
+    def university_matches(self) -> list[dict[str, Any]]:
+        return self.agent2_result.get("universities", []) if self.agent2_ready else []
+
+    @rx.var
+    def university_factor_rows(self) -> list[dict[str, str]]:
+        return [{"program": u["name"] + " / " + u["program"], "feature": f["feature"],
+                 "impact": f"{f['impact']:+.4f}"}
+                for u in self.university_matches for f in u["factors"]]
+
+    @rx.var
+    def university_count(self) -> str:
+        return str(len({u["name"] for u in self.university_matches})) if self.agent2_ready else "Unavailable"
+
+    @rx.var
+    def university_scored_count(self) -> str:
+        return str(len({u["name"] for u in self.university_matches if not u["evidence_reason"]})) if self.agent2_ready else "Unavailable"
+
+    @rx.var
+    def agent2_status(self) -> str:
+        return self.agent2_error or "Agent 2 has not evaluated this profile. Run analysis to check its model bundle."
+
+    @rx.var
+    def analysis_scope(self) -> str:
+        return "Agent 7 uses real model inference. Agent 2 uses its updated bundle when available. Agents 1, 3, 4, 5 and 6 still show demonstration content."
+
+    @rx.var
+    def agent7_ready(self) -> bool:
+        return bool(self.agent7_result)
+
+    @rx.var
+    def agent7_score(self) -> str:
+        return str(self.agent7_result["profile_strength_score"]) if self.agent7_result else "Not scored"
+
+    @rx.var
+    def agent7_count(self) -> str:
+        return str(int(self.agent7_result["profile_strength_score"])) if self.agent7_result else ""
+
+    @rx.var
+    def agent7_count_suffix(self) -> str:
+        return "." + f"{self.agent7_result['profile_strength_score']:.1f}".split(".")[1] if self.agent7_result else ""
+
+    @rx.var
+    def agent7_tier(self) -> str:
+        return self.agent7_result.get("strength_tier", "Not scored")
+
+    @rx.var
+    def agent7_probability(self) -> str:
+        return f"{self.agent7_result['P(Strong)']:.6f}" if self.agent7_result else "Not scored"
+
+    @rx.var
+    def agent7_archetype(self) -> str:
+        return "Cluster " + self.agent7_result["achievement_archetype"] if self.agent7_result else "Not scored"
+
+    @rx.var
+    def agent7_research(self) -> str:
+        if not self.agent7_result:
+            return "Not scored"
+        return "Yes — reported publication or patent" if self.agent7_result["has_research_evidence"] else "No — no reported publication or patent"
 
     @rx.var
     def agents_completed_count(self) -> int:
@@ -185,5 +345,20 @@ class State(rx.State):
     @rx.event
     def download_report(self):
         service = get_report_service()
-        pdf = service.render_pdf(service.get_report(dict(self.profile)))
+        report = service.get_report(dict(self.profile))
+        # Copy before replacing demonstration values; never mutate shared mock data.
+        report["profile_strength"] = {"score": self.agent7_score, "label": self.agent7_tier, "dimensions": []}
+        report["extracurricular"] = {"items": [
+            {"name": "Profile Strength", "score": self.agent7_score},
+            {"name": "Strength Tier", "score": self.agent7_tier},
+            {"name": "Achievement Archetype", "score": self.agent7_archetype},
+            {"name": "Research Evidence", "score": self.agent7_research},
+            {"name": "P(Strong)", "score": self.agent7_probability},
+        ]}
+        report["agent7_notice"] = NOTICE
+        report["universities"] = list(self.university_matches)
+        report["agent2_notice"] = AGENT2_NOTICE if self.agent2_ready else self.agent2_status
+        report["key_factors"] = [{"name": f["program"] + " / " + f["feature"], "impact": f["impact"]}
+                                 for f in self.university_factor_rows]
+        pdf = service.render_pdf(report)
         return rx.download(data=pdf, filename="Meridian-Study-Abroad-Report.pdf")

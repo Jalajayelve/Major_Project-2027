@@ -22,7 +22,7 @@ def _globe_bg() -> str:
 def _agent(a):
     status = a["status"]
     cls = rx.cond(status == "processing", "agent-card processing", rx.cond(status == "completed", "agent-card completed", "agent-card waiting"))
-    node_cls = rx.cond(status == "waiting", "node", rx.cond(status == "processing", "node processing", "node completed"))
+    node_cls = rx.cond((status == "waiting") | (status == "unavailable"), "node", rx.cond(status == "processing", "node processing", "node completed"))
     right = rx.cond(
         status == "completed",
         rx.el.span("Completed", class_name="stamp"),
@@ -32,7 +32,7 @@ def _agent(a):
                 rx.el.span("Processing ", a["pct"], class_name="mono blue", style={"fontWeight": 600}),
                 rx.el.div(rx.el.i(style={"width": a["pct"]}), class_name="progress", style={"marginTop": "10px"}),
             ),
-            rx.el.span("Waiting", class_name="mono"),
+            rx.el.span(rx.cond(status == "unavailable", "Unavailable", "Waiting"), class_name="mono"),
         ),
     )
     return rx.el.div(
@@ -71,7 +71,7 @@ def analysis_page():
                 rx.el.div(
                     rx.el.div(
                         label("Analysis in progress", "on-navy"),
-                        rx.el.h1("Seven agents are studying your file", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
+                        rx.el.h1("Your dossier is being prepared", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
                         rx.el.div(
                             rx.el.span(State.overall_pct, class_name="num-key", style={"fontSize": "44px"}),
                             rx.el.span(State.agents_completed_count.to_string() + " of 7 complete", class_name="mono on-navy"),
@@ -80,6 +80,9 @@ def analysis_page():
                         rx.el.div(rx.el.i(style={"width": State.overall_pct}), class_name="progress", style={"marginTop": "14px", "maxWidth": "420px", "background": "var(--rule-on-navy)"}),
                         style={"marginBottom": "56px"}, class_name="page-enter",
                     ),
+                    rx.el.p(State.analysis_scope, class_name="body on-navy", style={"marginBottom": "24px"}),
+                    rx.cond(State.agent7_error != "", rx.el.div(rx.el.p(State.agent7_error, role="alert", class_name="body on-navy"), rx.el.a("Return to profile", href="/profile", class_name="nav-link on-navy")), rx.fragment()),
+                    rx.cond(State.agent2_error != "", rx.el.p(State.agent2_error, role="status", class_name="body on-navy", style={"marginBottom": "20px"}), rx.fragment()),
                     rx.el.div(rx.foreach(State.agents, _agent), class_name="route", style={"maxWidth": "860px"}),
                     rx.el.div(
                         rx.el.div(

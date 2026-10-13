@@ -2,40 +2,61 @@
 import reflex as rx
 
 from ..data import mock
+from ..state import State
+from ..services.agent7 import NOTICE
+from ..services.agent2 import NOTICE as AGENT2_NOTICE
 from .common import bar, count_num, label
 
 
 def profile_strength():
-    ps = mock.PROFILE_STRENGTH
-    return rx.el.div(
+    return rx.cond(
+        State.agent7_ready,
         rx.el.div(
-            label("Overall"),
-            count_num(ps["score"], style={"fontSize": "96px", "margin": "6px 0 0"}),
-            rx.el.span(f"out of 100 · {ps['label']}", class_name="mono ink"),
+            rx.el.div(
+                label("Profile Strength · Agent 7"),
+                rx.el.p(State.agent7_score, class_name="num-key", style={"fontSize": "96px", "margin": "6px 0 0"},
+                          key=State.agent7_score, custom_attrs={"data-count": State.agent7_count, "data-suffix": State.agent7_count_suffix}),
+                rx.el.span("out of 100", class_name="mono ink"),
+            ),
+            rx.el.div(
+                *[rx.el.div(label(name), rx.el.span(value, class_name="mono ink"), class_name="kv-row")
+                  for name, value in [("Strength Tier", State.agent7_tier), ("Achievement Archetype", State.agent7_archetype),
+                                      ("Research Evidence", State.agent7_research), ("P(Strong)", State.agent7_probability)]],
+                rx.el.p(NOTICE, class_name="body", style={"marginTop": "18px", "fontSize": "13px"}),
+                rx.el.p("Archetypes are cluster IDs, not ranked labels. Research Evidence uses the reported publication/patent counts; it does not verify documents.", class_name="body", style={"marginTop": "10px", "fontSize": "13px"}),
+            ),
+            class_name="split", style={"gridTemplateColumns": "minmax(0,1fr) minmax(0,1.6fr)", "gap": "48px"},
+            custom_attrs={"data-testid": "agent7-result"},
         ),
         rx.el.div(
-            *[rx.el.div(
-                rx.el.div(rx.el.span(d["name"], style={"fontWeight": 500}), rx.el.span(str(d["score"]), class_name="mono ink"), class_name="row between", style={"marginBottom": "8px"}),
-                bar(d["pct"], key=(d["score"] == max(x["score"] for x in ps["dimensions"]))),
-                style={"marginBottom": "18px"},
-            ) for d in ps["dimensions"]],
+            rx.el.p("Agent 7 has not scored this profile. Complete the eight Agent 7 fields in Experience and submit your profile.", class_name="body"),
+            rx.el.a("Return to profile", href="/profile", class_name="nav-link"),
         ),
-        class_name="split", style={"gridTemplateColumns": "minmax(0,1fr) minmax(0,1.6fr)", "gap": "48px"},
     )
 
 
 def admission_probability():
-    rows = []
-    for u in sorted(mock.UNIVERSITIES, key=lambda x: -x["prob"]):
-        rows.append(rx.el.div(
-            rx.el.div(
-                rx.el.div(rx.el.span(u["name"], style={"fontWeight": 500}), rx.el.span(u["tier"], class_name="tier"), class_name="row", style={"gap": "12px"}),
-                count_num(u["prob"], suffix="%", tag="span", style={"fontSize": "26px"}),
-                class_name="row between wrap", style={"marginBottom": "8px", "gap": "8px"},
-            ),
-            bar(u["prob_str"], key=True), style={"marginBottom": "20px"},
-        ))
-    return rx.el.div(*rows)
+    return university_matches()
+
+
+def university_matches():
+    head = rx.el.tr(*[rx.el.th(h) for h in ("University / program", "Experimental band", "Unvalidated model score", "Match score", "Catalog tuition")])
+    return rx.cond(
+        State.agent2_ready,
+        rx.el.div(
+            rx.el.p(AGENT2_NOTICE, class_name="body", style={"marginBottom": "20px"}),
+            rx.cond(State.university_matches.length() == 0,
+                    rx.el.p("No programs in the catalog matched your degree and field.", class_name="body"),
+                    rx.el.div(rx.el.table(rx.el.thead(head), rx.el.tbody(rx.foreach(State.university_matches, lambda u:
+                        rx.el.tr(rx.el.td(rx.el.b(u["name"]), rx.el.p(u["program"], class_name="body"), rx.el.p(u["note"], class_name="body")),
+                                 rx.el.td(u["tier"]), rx.el.td(u["prob_str"]), rx.el.td(u["match_str"]), rx.el.td(u["tuition_str"]))
+                    )), class_name="plain"), style={"overflowX": "auto"})),
+            custom_attrs={"data-testid": "agent2-result"},
+        ),
+        rx.el.div(rx.el.p(State.agent2_status, class_name="body", role="status"),
+                  rx.el.p("Run analysis to generate current experimental matches and scores.", class_name="body"),
+                  custom_attrs={"data-testid": "agent2-unavailable"}),
+    )
 
 
 def programs_table():
@@ -88,26 +109,17 @@ def career():
 
 
 def extracurricular():
-    e = mock.EXTRACURRICULAR
-    return rx.el.div(
-        rx.el.div(count_num(e["score"], tag="span", style={"fontSize": "64px"}), rx.el.span("of 100", class_name="mono"), class_name="row", style={"gap": "14px", "alignItems": "baseline", "marginBottom": "24px"}),
-        *[rx.el.div(
-            rx.el.div(rx.el.span(i["name"], style={"fontWeight": 500}), rx.el.span(str(i["score"]), class_name="mono ink"), class_name="row between", style={"marginBottom": "8px"}),
-            bar(i["w"], key=(i["score"] == max(x["score"] for x in e["items"]))), style={"marginBottom": "18px"},
-        ) for i in e["items"]],
-    )
+    return profile_strength()
 
 
 def key_factors():
-    rows = []
-    for k in mock.KEY_FACTORS:
-        rows.append(rx.el.div(
-            rx.el.div(rx.el.span(k["name"], style={"fontWeight": 500}),
-                      rx.el.span(k["impact"], class_name="num-key" if k["positive"] else "mono ink", style={"fontSize": "22px"} if k["positive"] else {}),
-                      class_name="row between", style={"marginBottom": "8px", "gap": "12px"}),
-            bar(k["w"], key=k["positive"], neg=not k["positive"]), style={"marginBottom": "18px"},
-        ))
-    return rx.el.div(
-        rx.el.p("Blue bars raised your estimate; grey bars lowered it. Points show the approximate effect on your overall admission outlook.", class_name="body", style={"marginBottom": "24px"}),
-        *rows,
+    return rx.cond(
+        State.agent2_ready,
+        rx.el.div(
+            rx.el.p("SHAP impacts describe the uncalibrated classifier's class 1 output. They do not explain the calibrated estimate or measure admission percentage points.", class_name="body", style={"marginBottom": "20px"}),
+            rx.foreach(State.university_factor_rows, lambda f: rx.el.div(
+                rx.el.span(f["program"], class_name="body"),
+                rx.el.span(f["feature"] + ": " + f["impact"], class_name="mono ink"), class_name="kv-row")),
+        ),
+        rx.el.p("Agent 2 factors are unavailable until its updated model bundle can be evaluated.", class_name="body"),
     )

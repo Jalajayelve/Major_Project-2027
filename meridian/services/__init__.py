@@ -1,13 +1,14 @@
-"""Swap these factories for real FastAPI / WebSocket clients later."""
+"""Service factories; keep UI/PDF dependencies out of isolated ML workers."""
 from .interfaces import AgentEvent, AgentEventSource, ProfileService, ReportService
-from .mock import MockEventSource, MockReportService
 
 
 def get_event_source() -> AgentEventSource:
+    from .mock import MockEventSource
     return MockEventSource()
 
 
 def get_report_service() -> ReportService:
+    from .mock import MockReportService
     return MockReportService()
 
 
