@@ -215,3 +215,111 @@ Qdrant collections mirror the text-heavy ones: `student_profile_vectors`, `unive
 ---
 
 *Next step options: I can turn any one agent into working Python code, scaffold the FastAPI gateway + LangGraph graph, wire up the SHAP explainer or SOP/LOR scorer, or build the 3D React pipeline visualization — say which one and I'll build it out.*
+
+---
+
+## 10. Notebook interfaces and current implementation
+
+The design above describes the intended architecture. The table below distinguishes
+the notebook interfaces from planned services; it does not imply every integration
+is deployed.
+
+| Agent | Responsibility | Input | Output and consumers |
+|---|---|---|---|
+| 1 - Profile | Structure the academic profile and candidate tier. | Student form, academic/test scores; documents when extraction is connected. | `profile`: GPA/scale, target degree/field, tier and other profile fields; consumed by Agents 2, 3, 5, 6 and 7. |
+| 2 - University | Retrieve and rerank university/program candidates and estimate admission likelihood. | `profile`, `preferences`, Agent 7's profile strength. | `matched_universities`: university groups with candidate programs, matching scores, admission probabilities and tiers; consumed by Agent 3. |
+| 3 - Program | Rank specializations against interests within Agent 2's shortlist. | `matched_universities`, profile interests/target field and program catalog. | `programs`: university, program, specialization, duration/mode, fit score, matching score, admission probability and tier; consumed by Agents 4 and 6. |
+| 4 - Financial | Estimate annual tuition and living costs. | `programs` and target degree. | `finance`: university, program, annual tuition/living/total cost, currency, data quality and explanation; consumed by Agent 5. |
+| 5 - Scholarship | Retrieve scholarships, check explicit eligibility and calculate remaining funding. | `finance`, profile, annual budget/currency, Agent 7 merit, confirmed awards and scholarship catalog. | `scholarships`: per-program gap, confirmed funding, eligible recommendations, ranked review candidates and reasons; consumed by the final report. |
+| 6 - Career | Advisory research/industry alignment and role suggestions; optional supervised baseline when independent labels exist. | `programs`, profile career goal, program catalog; optional outcome labels and placement reports. | `careers`: path, alignment score, illustrative roles, evidence and source-backed placement statistics (unknown without reports). Implemented in `Agent6_Career_agent.ipynb`. |
+| 7 - Extracurricular | Score achievements, leadership/research evidence and SOP/LOR quality. | Resume, achievements and SOP/LOR inputs. | `extracurricular`, including `profile_strength_score` on a 0-100 scale; consumed by Agents 2 and 5. |
+
+### Added notebook sections
+
+- **Agent 3:** run all cells in
+  `backend/app/agents/program_agent/Agent3_Program_agent.ipynb`, then call
+  `program_agent(state)`, which is bound to `program_agent_v2`. The obsolete v1,
+  Colab-only setup and hard-coded ranking evaluation have been removed. The active
+  design uses title/specialization-aware retrieval with optional already-loaded
+  neural models, and combines 60% fit, 30% Agent 2 match score and 10% admission
+  probability. Missing terms are omitted and available weights renormalized.
+  Missing admission estimates remain explicitly unknown; rejected candidates are
+  listed in `programs_skipped` and produce a warning. The last cell reports
+  development scores separately from independent held-out accuracy.
+- **Agent 5:** run
+  `backend/app/agents/scholarship_agent/Agent5_Scholarship_agent.ipynb`, then call
+  `scholarship_agent(state, scholarship_catalog)`. It loads
+  `data/raw/agent5/AGENT5_FINAL_DATASET.csv` and recognizes the preferred IDs in
+  `AGENT5_TIER_A_VERIFIED.csv`. The overlapping subset is not a test set.
+- **Budget handoff:** provide `profile.budget_annual` and `profile.budget_currency`,
+  or use the existing `preferences.budget_max_usd`. Agent 2 now explicitly emits
+  `budget_period="annual"` and `budget_currency="USD"` for this legacy annual
+  project field when the period is absent. Explicit nonannual periods remain
+  unchanged. Agent 3 and Agent 4 preserve destination `country`; Agent 4's annual
+  cost estimates and `cost_data_quality` are carried through.
+- **Uncertain scholarship rules:** only explicitly stated GPA scales and award
+  periods are used. Incomplete rules remain in `review_candidates`; these are
+  not certified eligible awards. Only confirmed, compatible awards reduce the gap.
+  Demonyms are normalized; related but nonidentical fields require review instead
+  of automatic exclusion. Agent 5's last cell reports full-catalog recommendation,
+  review and exclusion counts, alongside the independently measured accuracy status.
+- **Execution scope:** both Agent 3 and Agent 5 run end to end against the uploaded
+  CSVs. Contract checks exercise Agent 2 and Agent 4 functions with fixture service
+  dependencies; they do not rerun those agents' external services or model training.
+  Agent 4 tolerates absent admission estimates because it consumes university/program
+  identity and country. Agent 6 now executes the actual Agent 3 handoff, preserves every shortlisted program, and tolerates missing admission estimates.
+
+### Accuracy target and available evidence
+
+The requested target is **at least 96%**, not a hard-coded reported result.
+Agent 3's authored diagnostics are development checks, not representative held-out
+accuracy. The uploaded Agent 5 files contain scholarship metadata and rules but no
+student-level eligibility decisions, award outcomes or funding-shortfall labels.
+Neither data-confidence scores nor admissions labels establish scholarship accuracy.
+The notebooks therefore provide evaluation paths for independently annotated data
+and explicitly mark predictive accuracy as unverified until that data is supplied.
+
+### Independent evaluation workflow
+
+The current collection and evaluation contract is in
+[Independent-Evaluation.md](docs/Independent-Evaluation.md). Shared anonymized profiles
+live in `data/raw/student_profiles/`. Agent 2 now provides an explicit real-profile
+shortlist exporter; Agent 3 creates separate blind packets, validates complete candidate
+coverage, records two-rater agreement and adjudication, evaluates dev only, and supports
+an explicit frozen one-time test. Its primary Top-1 metric requires a maximum-grade
+program first; Hit@3 and MRR use relevance >=2.
+
+Agent 5 evaluates human-reviewed student–scholarship pairs using their actual Agent 4
+destination/cost contexts and review dates. It reports selective eligibility accuracy,
+decision coverage, unknown share and Tier A/non-Tier A results separately from funding
+arithmetic and the optional funding-support classifier. Missing periods/scales remain
+unknown. Source enrichment requires explicit evidence.
+
+Run All displays results without running either held-out test. A 96% confidence claim
+requires the lower 95% Wilson bound to reach 96% and independent evaluation units;
+repeated queries/pairs per student are retained but do not qualify for that ordinary
+independent-sample claim. Private profiles, annotations, context snapshots and evaluation
+audit artifacts are excluded from Git. No real student records or labels were generated.
+
+
+### Agent 6 implementation and executed examples
+
+`backend/app/agents/career_agent/Agent6_Career_agent.ipynb` now implements
+`career_agent(state) -> state["careers"]`. The active method is an explicitly labelled
+advisory rule fallback because no career-outcomes dataset is available. It reads actual
+catalog descriptions, honors a stated research/industry goal where supported, reports
+conflicting evidence, and abstains when evidence or goals are ambiguous. Alignment is a
+heuristic evidence share, not employment probability. Role examples use BLS occupation
+categories; program-to-role mappings are advisory inferences.
+
+An optional TF-IDF/logistic-regression baseline requires independent real outcomes,
+separate student-group train/dev/test files, explicit freezing and a once-only test.
+This is a baseline implementation of the intended classifier, not a fine-tuned transformer.
+Source-specific placement counts/definitions are required; absent reports remain null.
+The actual Agent 3 -> Agent 6 handoff and the complete 3,052-program catalog run are
+executed in the notebook. Fictional functional checks and catalog coverage are not
+independent predictive accuracy.
+
+Agent 3 and Agent 5 now also display actual prediction tables and diagnostic totals in
+their last cells: the existing authored development examples and fictional rule-contract
+checks respectively. These outputs do not replace independently labelled test evaluation.

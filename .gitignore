@@ -15,3 +15,19 @@ venv/
 
 # Local model files (keep if they are intentionally tracked)
 # *.pkl
+
+# Private research profiles, independent labels and evaluation audit artifacts
+data/raw/student_profiles/
+data/raw/agent3/agent3_shortlists_for_annotation*
+data/raw/agent3/agent3_annotator_*.csv
+data/raw/agent3/agent3_relevance_judgments*
+data/raw/agent3/evaluation_runs/
+data/raw/agent5/agent5_eligibility_judgments*
+data/raw/agent5/agent5_labelled_outcomes.csv
+data/raw/agent5/agent5_evaluation_states.json
+data/raw/agent5/eligibility_evaluation_runs/
+data/raw/agent5/agent5_source_enrichments.csv
+data/raw/agent5/agent5_tier_a_source_review_queue.csv
+
+# Private career outcomes, placement evidence and evaluation audit artifacts
+data/raw/agent6/
