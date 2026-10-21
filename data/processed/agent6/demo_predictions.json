@@ -1,0 +1,144 @@
+[
+  {
+    "university": "Stanford University",
+    "program_name": "MS Computer Science - Systems",
+    "country": "United States",
+    "career_path": "industry",
+    "alignment_score": 0.6666666666666666,
+    "expected_roles": [
+      "Software Engineer",
+      "Backend/Full-Stack Developer",
+      "Machine Learning Engineer"
+    ],
+    "avg_placement_stats": null,
+    "method": "rule_based_advisory + uploaded_outcomes_and_unsupervised_clusters",
+    "alignment_score_type": "heuristic_goal_evidence_share",
+    "model_confidence": null,
+    "stated_goal": "industry",
+    "goal_interpretation": "explicit career_goal",
+    "track_evidence": {
+      "research": [
+        "research"
+      ],
+      "industry": [
+        "engineering",
+        "software"
+      ]
+    },
+    "role_sources": [
+      "Uploaded dataset: curated CIP-family mapping"
+    ],
+    "roles_note": "Illustrative roles to explore, not predicted job offers; qualifications may vary.",
+    "placement_note": "No program-specific placement report supplied.",
+    "review_required": false,
+    "warnings": [
+      "Career-path advice is heuristic; the separate trained model estimates cohort earnings.",
+      "No independent student research/industry labels; clustering does not establish track accuracy."
+    ],
+    "outcome_evidence": {
+      "row_type": "program_estimated",
+      "estimate_method": "observed_university_cip",
+      "evidence_level": "university_observed",
+      "evidence_n": 54.0,
+      "usable_for_scoring": true,
+      "thin_sample_flag": false,
+      "intl_student_applicability": "proxy_only_US_federal_aid_completers",
+      "credential_level": "Master's",
+      "outcome_source_unitid": 243744.0,
+      "unitid_source": "uploaded_outcome_identity"
+    },
+    "outcome_cluster": {
+      "id": 0,
+      "meaning": "Similarity of cohort earnings and debt; not a career-track prediction",
+      "input_origin": "observed_university_cip"
+    },
+    "earnings_context": {
+      "uploaded_4yr_earnings_usd": 255667.0,
+      "uploaded_estimate_method": "observed_university_cip",
+      "model_4yr_earnings_usd": 164380.6749879998,
+      "model_scope": "Field/credential cohort estimate; not personalized salary or placement probability",
+      "currency": "USD",
+      "cohort_year": null,
+      "international_applicability": "proxy only"
+    },
+    "school_placement_context": null,
+    "research_industry_accuracy": "not_measured",
+    "program_id": "P000121",
+    "unitid": 243744,
+    "employment_proxy_context": {
+      "value": 0.931,
+      "type": "uploaded proxy, NOT a placement rate"
+    }
+  },
+  {
+    "university": "Stanford University",
+    "program_name": "MS Computer Science",
+    "country": "United States",
+    "career_path": "industry",
+    "alignment_score": 0.6666666666666666,
+    "expected_roles": [
+      "Software Engineer",
+      "Backend/Full-Stack Developer",
+      "Machine Learning Engineer"
+    ],
+    "avg_placement_stats": null,
+    "method": "rule_based_advisory + uploaded_outcomes_and_unsupervised_clusters",
+    "alignment_score_type": "heuristic_goal_evidence_share",
+    "model_confidence": null,
+    "stated_goal": "industry",
+    "goal_interpretation": "explicit career_goal",
+    "track_evidence": {
+      "research": [
+        "research"
+      ],
+      "industry": [
+        "engineering",
+        "software"
+      ]
+    },
+    "role_sources": [
+      "Uploaded dataset: curated CIP-family mapping"
+    ],
+    "roles_note": "Illustrative roles to explore, not predicted job offers; qualifications may vary.",
+    "placement_note": "No program-specific placement report supplied.",
+    "review_required": false,
+    "warnings": [
+      "Career-path advice is heuristic; the separate trained model estimates cohort earnings.",
+      "No independent student research/industry labels; clustering does not establish track accuracy."
+    ],
+    "outcome_evidence": {
+      "row_type": "program_estimated",
+      "estimate_method": "observed_university_cip",
+      "evidence_level": "university_observed",
+      "evidence_n": 54.0,
+      "usable_for_scoring": true,
+      "thin_sample_flag": false,
+      "intl_student_applicability": "proxy_only_US_federal_aid_completers",
+      "credential_level": "Master's",
+      "outcome_source_unitid": 243744.0,
+      "unitid_source": "uploaded_outcome_identity"
+    },
+    "outcome_cluster": {
+      "id": 0,
+      "meaning": "Similarity of cohort earnings and debt; not a career-track prediction",
+      "input_origin": "observed_university_cip"
+    },
+    "earnings_context": {
+      "uploaded_4yr_earnings_usd": 255667.0,
+      "uploaded_estimate_method": "observed_university_cip",
+      "model_4yr_earnings_usd": 164380.6749879998,
+      "model_scope": "Field/credential cohort estimate; not personalized salary or placement probability",
+      "currency": "USD",
+      "cohort_year": null,
+      "international_applicability": "proxy only"
+    },
+    "school_placement_context": null,
+    "research_industry_accuracy": "not_measured",
+    "program_id": "P000101",
+    "unitid": 243744,
+    "employment_proxy_context": {
+      "value": 0.931,
+      "type": "uploaded proxy, NOT a placement rate"
+    }
+  }
+]

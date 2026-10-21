@@ -1,0 +1,29 @@
+{
+  "artifacts": {
+    "agent6_earnings_model.joblib": {
+      "sha256": "7cb0e13fb9bff60a9dff48873adb3b8fe0120a9781b13c9ebbaf4fe68449910d",
+      "bytes": 117058
+    },
+    "agent6_lookup_bundle.joblib": {
+      "sha256": "1d9b57beaac79ad3b0c4c5b674d9c59f4239e20b267c09d1c2a72692cb7e51de",
+      "bytes": 639889
+    },
+    "agent6_outcome_clusters.joblib": {
+      "sha256": "9f22d9c0d9ff48243950894dcca681e95330c93811f29d8ca17483c3feff376d",
+      "bytes": 10732
+    }
+  },
+  "dataset_sha256": "74c730ed9566c876a748155ac0d6a46e91139194382f28aad6d04136e354d506",
+  "sklearn_version": "1.8.0",
+  "regression_features": [
+    "cip_family",
+    "cip_code",
+    "credential_level",
+    "control"
+  ],
+  "cluster_features": [
+    "earnings_1yr",
+    "earnings_4yr",
+    "median_debt_observed"
+  ]
+}

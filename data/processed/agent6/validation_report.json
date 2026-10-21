@@ -1,0 +1,165 @@
+{
+  "version": "agent6-outcomes-v2",
+  "created_utc": "2026-10-21T16:42:55.516529+00:00",
+  "audit": {
+    "uploaded_rows": 51842,
+    "uploaded_columns": 97,
+    "sha256": "74c730ed9566c876a748155ac0d6a46e91139194382f28aad6d04136e354d506",
+    "row_types": {
+      "scorecard_observed": 48809,
+      "program_estimated": 3033
+    },
+    "deduplicated_us_observed_rows": 48679,
+    "duplicate_observed_keys_removed": 0,
+    "mapped_program_ids": 3033,
+    "split_rows": {
+      "train": 29276,
+      "dev": 10208,
+      "test": 9195
+    },
+    "split_institutions": {
+      "train": 1371,
+      "dev": 457,
+      "test": 457
+    },
+    "split_institution_overlap": 0,
+    "research_industry_ground_truth_labels": 0,
+    "placement_status_counts": {
+      "proxy_only": 51789,
+      "real_counts": 42,
+      "real_rate_only": 11
+    },
+    "provenance": "Source names and scopes are recorded in the uploaded file; row-level source reconstruction and cohort-year validation are not available.",
+    "population_scope": "Uploaded file marks outcomes as proxies for US federal-aid completers, not international-student forecasts."
+  },
+  "regression_test": {
+    "n": 7171,
+    "mae_usd": 10321.838202915358,
+    "rmse_usd": 16067.05852850458,
+    "r2": 0.6342611833871428,
+    "within_10_percent": 0.48180170129689026,
+    "median_absolute_percentage_error": 0.10457218342811397
+  },
+  "baseline_test": {
+    "n": 7171,
+    "mae_usd": 19150.852740203598,
+    "rmse_usd": 27460.870617125034,
+    "r2": -0.0683828496048291,
+    "within_10_percent": 0.2302328824431739,
+    "median_absolute_percentage_error": 0.22035343263223275
+  },
+  "clustering_test": {
+    "silhouette": 0.41344629396972776,
+    "davies_bouldin": 1.0153422526931908,
+    "rows": 6672,
+    "cluster_count": 2
+  },
+  "clustering_dev_candidates": [
+    {
+      "k": 2,
+      "development_silhouette": 0.4207868989719796
+    },
+    {
+      "k": 3,
+      "development_silhouette": 0.41577936165327856
+    },
+    {
+      "k": 4,
+      "development_silhouette": 0.30873788159642934
+    },
+    {
+      "k": 5,
+      "development_silhouette": 0.33006875091197435
+    },
+    {
+      "k": 6,
+      "development_silhouette": 0.3232788654085489
+    },
+    {
+      "k": 7,
+      "development_silhouette": 0.277786507518636
+    },
+    {
+      "k": 8,
+      "development_silhouette": 0.27187252560922254
+    }
+  ],
+  "catalog_coverage": {
+    "catalog_programs": 3052,
+    "exact_outcome_matches": 3033,
+    "with_cluster_assignment": 3021,
+    "with_school_placement_context": 41,
+    "with_program_placement_stats": 0
+  },
+  "functional_checks": [
+    {
+      "check": "input_state_preserved",
+      "passed": true
+    },
+    {
+      "check": "all_catalog_programs_retained",
+      "passed": true
+    },
+    {
+      "check": "exact_mapping_coverage",
+      "passed": true
+    },
+    {
+      "check": "proxies_not_reported_as_program_placement",
+      "passed": true
+    },
+    {
+      "check": "no_unseen_institution_overlap",
+      "passed": true
+    },
+    {
+      "check": "estimates_excluded_from_training",
+      "passed": true
+    },
+    {
+      "check": "earnings_joblib_reload_identical",
+      "passed": true
+    },
+    {
+      "check": "cluster_joblib_reload_identical",
+      "passed": true
+    },
+    {
+      "check": "lookup_reload_identical",
+      "passed": true
+    },
+    {
+      "check": "unknown_program_no_fabricated_outcomes",
+      "passed": true
+    },
+    {
+      "check": "conflicting_program_identity_rejected",
+      "passed": true
+    },
+    {
+      "check": "no_supervised_track_classifier_fabricated",
+      "passed": true
+    },
+    {
+      "check": "future_placement_cohort_withheld",
+      "passed": true
+    }
+  ],
+  "artifacts": {
+    "agent6_earnings_model.joblib": {
+      "sha256": "7cb0e13fb9bff60a9dff48873adb3b8fe0120a9781b13c9ebbaf4fe68449910d",
+      "bytes": 117058
+    },
+    "agent6_lookup_bundle.joblib": {
+      "sha256": "1d9b57beaac79ad3b0c4c5b674d9c59f4239e20b267c09d1c2a72692cb7e51de",
+      "bytes": 639889
+    },
+    "agent6_outcome_clusters.joblib": {
+      "sha256": "9f22d9c0d9ff48243950894dcca681e95330c93811f29d8ca17483c3feff376d",
+      "bytes": 10732
+    }
+  },
+  "sklearn_version": "1.8.0",
+  "research_industry_classification_accuracy": null,
+  "note": "Earnings metrics compare held-out uploaded cohort figures. Clustering metrics are not accuracy. Source rows and years are not independently reconstructed."
+}
