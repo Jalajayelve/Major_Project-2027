@@ -31,3 +31,8 @@ data/raw/agent5/agent5_tier_a_source_review_queue.csv
 
 # Private career outcomes, placement evidence and evaluation audit artifacts
 data/raw/agent6/
+
+# Uploaded-applicant demonstration states and run artifacts (not research labels)
+data/processed/agent4/demo_20_states.json
+data/processed/agent4/demo_20_summary.csv
+data/processed/agent4/legacy_model_artifacts/

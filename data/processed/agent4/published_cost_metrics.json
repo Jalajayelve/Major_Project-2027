@@ -1,0 +1,12 @@
+{
+  "universities_requested": 50,
+  "published_totals_available": 43,
+  "prediction_coverage": 1.0,
+  "reference_coverage": 0.86,
+  "scored_estimates": 43,
+  "published_fallback_cases_excluded": 0,
+  "within_10_percent_count": 13,
+  "descriptive_share_within_10_percent": 0.3023255813953488,
+  "strictly_comparable_cases": 0,
+  "strict_accuracy_within_10_percent": null
+}

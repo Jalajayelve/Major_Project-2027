@@ -1,0 +1,51 @@
+university_name,unitid,financial_university_name,state,match_method,source
+Massachusetts Institute of Technology,166683,Massachusetts Institute of Technology,MA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Stanford University,243744,Stanford University,CA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Carnegie Mellon University,211440,Carnegie Mellon University,PA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of California-Berkeley,110635,University of California-Berkeley,CA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Georgia Institute of Technology-Main Campus,139755,Georgia Institute of Technology-Main Campus,GA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Illinois Urbana-Champaign,145637,University of Illinois Urbana-Champaign,IL,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Michigan-Ann Arbor,170976,University of Michigan-Ann Arbor,MI,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+The University of Texas at Austin,228778,The University of Texas at Austin,TX,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Washington-Seattle Campus,236948,University of Washington-Seattle Campus,WA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of California-San Diego,110680,University of California-San Diego,CA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Columbia University in the City of New York,190150,Columbia University in the City of New York,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Cornell University,190415,Cornell University,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Southern California,123961,University of Southern California,CA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+New York University,193900,New York University,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Pennsylvania,215062,University of Pennsylvania,PA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Purdue University-Main Campus,243780,Purdue University-Main Campus,IN,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Maryland-College Park,163286,University of Maryland-College Park,MD,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Wisconsin-Madison,240444,University of Wisconsin-Madison,WI,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Northeastern University,167358,Northeastern University,MA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Texas A&M University-College Station,228723,Texas A&M University-College Station,TX,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Virginia Polytechnic Institute and State University,233921,Virginia Polytechnic Institute and State University,VA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Arizona State University Campus Immersion,104151,Arizona State University Campus Immersion,AZ,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Minnesota-Twin Cities,174066,University of Minnesota-Twin Cities,MN,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Ohio State University-Main Campus,204796,Ohio State University-Main Campus,OH,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Pennsylvania State University-Main Campus,214777,Pennsylvania State University-Main Campus,PA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Colorado Boulder,126614,University of Colorado Boulder,CO,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+North Carolina State University at Raleigh,199193,North Carolina State University at Raleigh,NC,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Florida,134130,University of Florida,FL,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of California-Irvine,110653,University of California-Irvine,CA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of California-Davis,110644,University of California-Davis,CA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Boston University,164988,Boston University,MA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Duke University,198419,Duke University,NC,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Northwestern University,147767,Northwestern University,IL,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Johns Hopkins University,162928,Johns Hopkins University,MD,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Rice University,227757,Rice University,TX,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Chicago,144050,University of Chicago,IL,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Massachusetts-Amherst,166629,University of Massachusetts-Amherst,MA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Rutgers University-New Brunswick,186380,Rutgers University-New Brunswick,NJ,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University at Buffalo,196088,University at Buffalo,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Stony Brook University,196097,Stony Brook University,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Utah,230764,University of Utah,UT,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Arizona,104179,University of Arizona,AZ,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Pittsburgh-Pittsburgh Campus,215293,University of Pittsburgh-Pittsburgh Campus,PA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Rochester,195030,University of Rochester,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Rensselaer Polytechnic Institute,194824,Rensselaer Polytechnic Institute,NY,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Stevens Institute of Technology,186867,Stevens Institute of Technology,NJ,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Worcester Polytechnic Institute,168421,Worcester Polytechnic Institute,MA,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+Case Western Reserve University,201645,Case Western Reserve University,OH,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Delaware,130943,University of Delaware,DE,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification
+University of Connecticut,129020,University of Connecticut,CT,unique_normalized_name_and_state,uploaded financial dataset UNITID; not a new NCES verification

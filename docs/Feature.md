@@ -40,3 +40,15 @@
 
 ## Overall feature completion
 Estimated final completion: 65%
+
+## Agent 4 notebook update — 2026-10-21
+
+The financial notebook now resolves all 50 catalog universities through an IPEDS
+UNITID crosswalk, selects the program's degree level, prioritizes catalog tuition,
+and supports a tagged published-COA fallback for missing tuition. The notebook
+contains its source-ledger builder, functional checks, a 20-record local chain
+replay and a final cost-evaluation cell. A complete locally executed copy is
+provided alongside the preserved source notebook. These notebook changes do not
+change the starter API completion percentages above. See
+[Agent 4 validation and I/O contract](Agent4-Validation.md) for results, scope and
+reproduction instructions.

@@ -323,3 +323,38 @@ independent predictive accuracy.
 Agent 3 and Agent 5 now also display actual prediction tables and diagnostic totals in
 their last cells: the existing authored development examples and fictional rule-contract
 checks respectively. These outputs do not replace independently labelled test evaluation.
+
+### Agent 4 UNITID integration and executed local chain — 2026-10-21
+
+The appended Agent 4 implementation consumes Agent 3's flat `programs` list and
+Agent 2's institution metadata. It returns one `finance` entry per program, with
+`university`, `program_name`, `unitid`, `program_level`, `country`, `tuition`,
+`living`, `total_cost`, currency/period and source-quality fields. The earlier
+implementation uses `tuition_annual` and `living_cost_annual`; the appended version
+preserves those names as aliases for `tuition` and `living`. Agents 5 and 6 consume
+the shared total/context fields.
+Unknown programs and costs remain visible. The active entry point is explicitly
+rebound to `financial_agent_v2` after its definition.
+
+All 50 catalog institutions are mapped to uploaded IPEDS UNITIDs through unique
+name/state checks, and all 3,052 program rows carry the identifier. Financial rows
+are joined on UNITID and program level. Catalog out-of-state tuition takes priority;
+missing catalog tuition can use the published COA for that degree level, tagged
+`published_coa` and accompanied by its source/enrollment scenario. If both are
+missing, the cost stays unknown. KNN tuition is excluded from observed lookups.
+Living remains a baseline-times-price-parity estimate. The legacy regression is
+separate from this catalog-first path.
+
+The notebook contains the full 50-institution source-ledger builder and evaluates
+estimates against available published totals using the within-10% metric. A total
+copied from that ledger is excluded from scoring against itself. Unknown reference
+years, periods and program/fee scope prevent a verified 96% accuracy claim.
+
+Twenty distinct uploaded applicant records were authorized as local demo inputs.
+The replay uses recorded academic fields without inventing budgets or interests,
+and runs Agents 2 through 6. Agent 2 uses its existing orchestration with offline
+retrieval and a documented replacement admission classifier. This is a functional
+demonstration, not an independent student-outcome accuracy test. Absent budgets
+still produce unknown funding gaps even when costs are available. The complete
+local execution notebook is provided alongside the source notebook with preserved
+historical cells. See [Agent 4 validation](docs/Agent4-Validation.md) for details.
