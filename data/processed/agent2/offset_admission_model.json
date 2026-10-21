@@ -1,0 +1,31 @@
+{
+  "version": "agent2-offset-monotone-v3.0",
+  "features": [
+    "gpa",
+    "gre_quant",
+    "gre_verbal",
+    "profile_strength_score"
+  ],
+  "medians": {
+    "gpa": 3.2741932892400976,
+    "gre_quant": 160.66666666666666,
+    "gre_verbal": 152.8796639675324,
+    "profile_strength_score": 74.47581480069596
+  },
+  "scales": [
+    0.18409623474975864,
+    3.3691660524593052,
+    7.808808964326285,
+    8.25451069507948
+  ],
+  "coef": [
+    0.3029291148673881,
+    0.9628801325192768,
+    0.0,
+    0.0,
+    0.28439476551758014
+  ],
+  "cap": 1.0986122886681098,
+  "penalty": 0.01,
+  "provenance_status": "unverified"
+}

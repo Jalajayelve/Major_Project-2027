@@ -1,0 +1,19 @@
+{
+  "passed": 12,
+  "checks": [
+    "neutral_profile_preserves_prior",
+    "gpa_monotone",
+    "gre_quant_monotone",
+    "gre_verbal_monotone",
+    "profile_strength_score_monotone",
+    "selectivity_monotone_at_fixed_base_rate",
+    "same_applicant_tier88_lower_than_tier60",
+    "base_rate_monotone",
+    "serialization_round_trip",
+    "missing_prior_rejected",
+    "odds_adjustment_bounded",
+    "all_group_folds_disjoint"
+  ],
+  "tier60_probability": 0.3056778272568152,
+  "tier88_probability": 0.17130140134933627
+}

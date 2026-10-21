@@ -52,3 +52,12 @@ provided alongside the preserved source notebook. These notebook changes do not
 change the starter API completion percentages above. See
 [Agent 4 validation and I/O contract](Agent4-Validation.md) for results, scope and
 reproduction instructions.
+
+## Agent 2 base-rate notebook revision
+
+The active notebook now uses a fixed program-rate offset, monotone applicant effects,
+GroupKFold by applicant ID, a profile-strength ablation, and actual neural retrieval.
+Its header and final cell report measured results and live-service execution status.
+Training-label provenance and program-rate evidence remain unverified. See
+[Agent 2 data audit and validation](Agent2-Base-Rate-Audit.md). Starter API integration
+and the historical Agent 4 offline replay are unchanged.

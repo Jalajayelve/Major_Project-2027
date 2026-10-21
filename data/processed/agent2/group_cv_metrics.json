@@ -1,0 +1,74 @@
+{
+  "without_profile_strength": {
+    "accuracy": 0.6856392294220666,
+    "roc_auc": 0.7162874113251899,
+    "brier_score": 0.20368815484321995,
+    "log_loss": 0.5932973557509981
+  },
+  "with_profile_strength": {
+    "accuracy": 0.6856392294220666,
+    "roc_auc": 0.7162906469938015,
+    "brier_score": 0.20368746184849956,
+    "log_loss": 0.5932957296813886
+  },
+  "prior_only": {
+    "accuracy": 0.5602326745058794,
+    "roc_auc": 0.4916312404678952,
+    "brier_score": 0.24838960256738568,
+    "log_loss": 0.6915059239621236
+  },
+  "evaluation_scope": "Five-fold GroupKFold by applicant_id; unverified CSV labels; no external test claim.",
+  "folds": [
+    {
+      "fold": 0,
+      "train_rows": 12790,
+      "validation_rows": 3198,
+      "overlapping_applicants": 0,
+      "accuracy": 0.6869918699186992,
+      "roc_auc": 0.7167344280068548,
+      "brier_score": 0.20367493051916233,
+      "log_loss": 0.5939508372562452
+    },
+    {
+      "fold": 1,
+      "train_rows": 12790,
+      "validation_rows": 3198,
+      "overlapping_applicants": 0,
+      "accuracy": 0.6776110068792995,
+      "roc_auc": 0.7087984821459797,
+      "brier_score": 0.20702683815875594,
+      "log_loss": 0.6004510672946805
+    },
+    {
+      "fold": 2,
+      "train_rows": 12790,
+      "validation_rows": 3198,
+      "overlapping_applicants": 0,
+      "accuracy": 0.690744215134459,
+      "roc_auc": 0.7173569579967125,
+      "brier_score": 0.20223351427026204,
+      "log_loss": 0.5904572108588163
+    },
+    {
+      "fold": 3,
+      "train_rows": 12791,
+      "validation_rows": 3197,
+      "overlapping_applicants": 0,
+      "accuracy": 0.6875195495777291,
+      "roc_auc": 0.725607953253206,
+      "brier_score": 0.20048335276675688,
+      "log_loss": 0.585081005272784
+    },
+    {
+      "fold": 4,
+      "train_rows": 12791,
+      "validation_rows": 3197,
+      "overlapping_applicants": 0,
+      "accuracy": 0.6853299968720675,
+      "roc_auc": 0.7129695236095803,
+      "brier_score": 0.20501808769790686,
+      "log_loss": 0.5965369725394413
+    }
+  ],
+  "profile_strength_accuracy_delta": 0.0
+}

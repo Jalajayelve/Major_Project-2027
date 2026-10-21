@@ -1,3 +1,5 @@
+> Current project selection: use `Agent4_Financial_agent.executed.ipynb` for running/demo. `Agent4_Financial_agent.ipynb` is retained because the rebuild scripts require it. The redundant original backup notebook has been removed.
+
 # Agent 4: executed local validation
 
 The active financial agent is implemented in the appended sections of

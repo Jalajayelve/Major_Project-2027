@@ -358,3 +358,20 @@ demonstration, not an independent student-outcome accuracy test. Absent budgets
 still produce unknown funding gaps even when costs are available. The complete
 local execution notebook is provided alongside the source notebook with preserved
 historical cells. See [Agent 4 validation](docs/Agent4-Validation.md) for details.
+
+### Agent 2 current notebook implementation — base-rate revision
+
+The v3 notebook appendix supersedes the historical RandomForest/GradientBoosting
+description above. It takes applicant GPA/GRE, Agent 7 profile strength (0–100),
+program tier and a program admission-rate prior. The admission estimate uses a fixed
+logit prior plus a bounded monotone adjustment, with applicant-grouped validation.
+Its output preserves university/program identity, UNITID, country, matching scores
+and admission estimates, and adds prior provenance and imputed-feature diagnostics.
+Neural retrieval uses BGE, Qdrant and a CrossEncoder; Groq explanations run through
+the live API when configured. The actual execution status appears in the final cell.
+
+The training CSV's external provenance is unverified, and its catalog rates are an
+exact tier-derived formula. The estimates are experimental, not validated real-world
+admission chances. Old zero-variance, feature-count and accuracy claims are superseded
+by the generated notebook header. This does not retroactively change the earlier
+Agent 4 offline replay. See [Agent 2 audit](docs/Agent2-Base-Rate-Audit.md).

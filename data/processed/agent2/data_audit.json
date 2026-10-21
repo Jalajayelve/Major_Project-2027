@@ -1,0 +1,31 @@
+{
+  "training_sha256": "5287e178b8a9d2527bcfb471e7a32a8c5bf1c23b17a3546ea899f34dac80a9af",
+  "catalog_sha256": "ec93644529074fa57daaacff84939c275412eb52d73ea28f5e75a98431bab8ac",
+  "rows": 15988,
+  "applicants": 12388,
+  "repeated_applicants": 1800,
+  "extra_rows_for_repeat_applicants": 3600,
+  "row_split_overlapping_applicants": 859,
+  "repeat_applicants_with_different_outcomes": 0,
+  "profile_strength_std": 8.25476885425936,
+  "profile_strength_label_correlation": 0.10272148117312806,
+  "selectivity_label_correlation": 0.01304834148426571,
+  "base_rate_label_correlation": -0.013048341484265716,
+  "base_rate_selectivity_correlation": -1.0,
+  "provenance": "UNVERIFIED: first added in git commit 313d617; no source URL, collection protocol, application year, or generation script located.",
+  "interpretation": "Repeated applicants have identical labels across programs. Compatible with applicant labels replicated onto a catalog; not verified program-specific admissions outcomes. Correlation alone cannot prove synthetic origin.",
+  "catalog_rate_linear_formula": {
+    "tier_slope": -0.01892147587511828,
+    "intercept": 1.8313150425733213,
+    "max_absolute_residual": 1.3322676295501878e-15
+  },
+  "repeat_ids_with_varying_applicant_features": {
+    "gpa": 1800,
+    "gre_quant": 1800,
+    "gre_verbal": 1800,
+    "profile_strength_score": 1800
+  },
+  "catalog_matched_training_rows": 15988,
+  "max_training_catalog_rate_difference": 0.0,
+  "max_training_catalog_tier_difference": 0.0
+}

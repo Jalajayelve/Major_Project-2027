@@ -9,6 +9,9 @@ venv/
 *.sqlite3
 .DS_Store
 *.log
+.cache/
+data/processed/agent2/oof_predictions.csv
+data/processed/agent2/online_demo_states.json
 
 # Notebook outputs
 .ipynb_checkpoints/
