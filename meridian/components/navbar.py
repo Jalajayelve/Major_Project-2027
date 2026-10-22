@@ -34,6 +34,6 @@ def journey_nav(active: int):
         for i, s in enumerate(STEPS)
     ]
     return rx.el.header(
-        rx.el.div(brand(), rx.el.div(*steps, class_name="stepper"), class_name="container nav-inner"),
+        rx.el.div(brand(), rx.el.div(*steps, class_name="stepper"), rx.el.a("Dashboard", href="/dashboard", class_name="nav-link"), class_name="container nav-inner"),
         class_name="nav",
     )

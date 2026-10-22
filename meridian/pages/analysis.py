@@ -1,4 +1,4 @@
-import reflex as rx
+﻿import reflex as rx
 
 from ..components.brand import brand, monogram
 from ..components.common import label
@@ -22,21 +22,21 @@ def _globe_bg() -> str:
 def _agent(a):
     status = a["status"]
     cls = rx.cond(status == "processing", "agent-card processing", rx.cond(status == "completed", "agent-card completed", "agent-card waiting"))
-    node_cls = rx.cond(status == "waiting", "node", rx.cond(status == "processing", "node processing", "node completed"))
+    node_cls = rx.cond(status == "completed", "node completed", rx.cond(status == "processing", "node processing", "node"))
     right = rx.cond(
         status == "completed",
         rx.el.span("Completed", class_name="stamp"),
         rx.cond(
             status == "processing",
             rx.el.div(
-                rx.el.span("Processing ", a["pct"], class_name="mono blue", style={"fontWeight": 600}),
-                rx.el.div(rx.el.i(style={"width": a["pct"]}), class_name="progress", style={"marginTop": "10px"}),
+                rx.el.span("Request runningâ€¦", class_name="mono blue request-busy", style={"fontWeight": 600}),
+
             ),
-            rx.el.span("Waiting", class_name="mono"),
+            rx.el.span(status, class_name="mono"),
         ),
     )
     return rx.el.div(
-        rx.el.div(rx.cond(status == "completed", "✓", ""), class_name=node_cls),
+        rx.el.div(rx.cond(status == "completed", "âœ“", ""), class_name=node_cls),
         rx.el.div(
             rx.el.span(a["no"], class_name="agent-no"),
             rx.el.div(
@@ -70,16 +70,17 @@ def analysis_page():
             rx.el.main(
                 rx.el.div(
                     rx.el.div(
-                        label("Analysis in progress", "on-navy"),
-                        rx.el.h1("Seven agents are studying your file", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
+                        label("Live backend requests", "on-navy"),
+                        rx.el.h1("Your dossier, under review", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
                         rx.el.div(
                             rx.el.span(State.overall_pct, class_name="num-key", style={"fontSize": "44px"}),
-                            rx.el.span(State.agents_completed_count.to_string() + " of 7 complete", class_name="mono on-navy"),
+                            rx.el.span(State.agents_completed_count.to_string() + " of 2 API requests completed", class_name="mono on-navy"),
                             class_name="row", style={"gap": "16px", "marginTop": "28px", "alignItems": "baseline"},
                         ),
-                        rx.el.div(rx.el.i(style={"width": State.overall_pct}), class_name="progress", style={"marginTop": "14px", "maxWidth": "420px", "background": "var(--rule-on-navy)"}),
+                        rx.el.p("Five agents are not exposed through an operational API. No simulated progress is shown.", class_name="body on-navy"),
                         style={"marginBottom": "56px"}, class_name="page-enter",
                     ),
+                    rx.el.div(rx.el.button("Run / retry analysis", on_click=State.run_agents, disabled=State.agents_running, class_name="tab-button on-navy"), rx.el.a("Dashboard", href="/dashboard", class_name="btn-ghost"), style={"marginBottom":"24px"}),
                     rx.el.div(rx.foreach(State.agents, _agent), class_name="route", style={"maxWidth": "860px"}),
                     rx.el.div(
                         rx.el.div(
@@ -89,7 +90,7 @@ def analysis_page():
                         rx.cond(
                             State.agents_done,
                             rx.el.button(
-                                rx.el.span("Open your dossier"), rx.el.span("→", class_name="tab-arrow"),
+                                rx.el.span("Open your dossier"), rx.el.span("â†’", class_name="tab-arrow"),
                                 on_click=rx.redirect("/results"), type="button", class_name="tab-button on-navy",
                             ),
                             rx.fragment(),

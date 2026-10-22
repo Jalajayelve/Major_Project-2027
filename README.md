@@ -1,12 +1,23 @@
-# MERIDIAN (Python Reflex)
+﻿# MERIDIAN — integrated Python Reflex application
 
-    pip install -r requirements.txt
-    reflex run
+The original `meridian-redesign` frontend is the foundation. Backend services and
+model artifacts were selectively imported from `jalaja-backend`.
 
-Flow: / Landing -> /profile -> /documents -> /analysis (7 agents) -> /results -> /report (PDF download)
+Read the [integration report and Windows run guide](docs/Meridian-Integration.md)
+for setup, implemented features, verified tests, backend limitations and file details.
 
-- meridian/theme.py: every colour token + global CSS (set ACCENT to your exact symbol hex)
-- meridian/data/mock.py: all mock data
-- meridian/services/: interfaces.py (REST / WebSocket / report Protocols + event shape), mock.py (dev stand-ins).
-  Return real clients from services/__init__.py to connect FastAPI / LangGraph.
-- assets/scene.js: hero parallax + lazy Three.js globe (skipped on mobile / reduced motion)
+Run the backend and frontend in separate VS Code PowerShell terminals:
+
+```powershell
+.\scripts\start_meridian.ps1 -Service backend
+.\scripts\start_meridian.ps1 -Service frontend
+```
+
+Install each environment first using the guide. Open http://localhost:3000.
+
+Flow: landing → cinematic transition → login/registration → dashboard → profile
+→ documents (unavailable until an API exists) → real API analysis → saved dossier.
+
+Matching currently uses the teammate's rule-based catalog endpoint. The expected
+MS/MBA prediction model exports and verified Agent 2/7 bundles are missing; the
+interface reports these limitations and does not fabricate model results.

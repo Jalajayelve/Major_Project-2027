@@ -1,0 +1,131 @@
+﻿.env.example
+.gitignore
+assets/enhancements.css
+backend/app/__init__.py
+backend/app/agents/extracurricular_agent/__init__.py
+backend/app/agents/extracurricular_agent/agent7_extracurricular_agent.ipynb
+backend/app/agents/extracurricular_agent/joblibs/agent7_archetype_scaler (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_feature_columns (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_gbr_score_model (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_keyword_anomaly_model (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_lr_tier_model (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_real_p90_thresholds (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_real_p99_caps (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_resume_archetype_kmeans (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_resume_archetype_scaler (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_rf_tier_model (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_scaler (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/agent7_xgb_tier_model (2).joblib
+backend/app/agents/extracurricular_agent/joblibs/cfg (2)
+backend/app/agents/extracurricular_agent/joblibs/meta (2).json
+backend/app/agents/extracurricular_agent/joblibs/model (2)
+backend/app/agents/extracurricular_agent/joblibs/moves (2)
+backend/app/agents/extracurricular_agent/joblibs/strings (2).json
+backend/app/agents/extracurricular_agent/joblibs/tokenizer (2)
+backend/app/agents/extracurricular_agent/joblibs/vectors (2)
+backend/app/agents/extracurricular_agent/joblibs/vectors (2).cfg
+backend/app/agents/extracurricular_agent/predict.py
+backend/app/agents/extracurricular_agent/README.md
+backend/app/agents/extracurricular_agent/repair.py
+backend/app/agents/extracurricular_agent/requirements.txt
+backend/app/agents/extracurricular_agent/schema.py
+backend/app/agents/extracurricular_agent/sop.py
+backend/app/agents/extracurricular_agent/verify_repair.py
+backend/app/agents/financial_agent/Agent4_Financial_agent.ipynb
+backend/app/agents/profile_agent/candidate_tier_model (2).ipynb
+backend/app/agents/profile_agent/predict.py
+backend/app/agents/profile_agent/train.py
+backend/app/agents/profile_agent/trained_models_A1/feature_columns.joblib
+backend/app/agents/profile_agent/trained_models_A1/lr_tier_model.joblib
+backend/app/agents/profile_agent/trained_models_A1/rf_tier_model.joblib
+backend/app/agents/profile_agent/trained_models_A1/scaler.joblib
+backend/app/agents/profile_agent/trained_models_A1/xgb_tier_model.joblib
+backend/app/agents/program_agent/Agent3_Program_agent.ipynb
+backend/app/agents/university_matching_agent/__init__.py
+backend/app/agents/university_matching_agent/Agent2_University_Agent.ipynb
+backend/app/agents/university_matching_agent/match.py
+backend/app/agents/university_matching_agent/requirements-local.txt
+backend/app/agents/university_matching_agent/trained models/agent2_agent1_tier_features.joblib
+backend/app/agents/university_matching_agent/trained models/agent2_agent1_tier_representation.joblib
+backend/app/agents/university_matching_agent/trained models/agent2_decision_threshold.joblib
+backend/app/agents/university_matching_agent/trained models/agent2_feature_columns.joblib
+backend/app/agents/university_matching_agent/trained models/applicant_cluster_model.joblib
+backend/app/agents/university_matching_agent/trained models/applicant_cluster_scaler.joblib
+backend/app/agents/university_matching_agent/trained models/university_cluster_features.joblib
+backend/app/agents/university_matching_agent/trained models/university_cluster_medians.joblib
+backend/app/agents/university_matching_agent/trained models/university_cluster_model.joblib
+backend/app/agents/university_matching_agent/trained models/university_cluster_scaler.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/agent2_admission_model.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/agent2_agent1_tier_features.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/agent2_agent1_tier_representation.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/agent2_decision_threshold.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/agent2_feature_columns.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/agent2_shap_explainer.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/applicant_cluster_model.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/applicant_cluster_scaler.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_features.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_medians.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_model.joblib
+backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_scaler.joblib
+backend/app/config.py
+backend/app/routes/__init__.py
+backend/app/routes/health_routes.py
+backend/app/routes/matching_routes.py
+backend/app/routes/profile_routes.py
+backend/app/utils/preprocessing.py
+backend/requirements.txt
+backend/requirements-test.txt
+backend/tests/conftest.py
+backend/tests/test_app.py
+backend/tests/test_contracts.py
+data/raw/agent1/agent1_ms_augmented_v2.csv
+data/raw/agent2/agent2_enhanced_program_catalog.csv
+data/raw/agent2/agent2_training.csv
+data/raw/agent7/labeled_bullets.csv
+docs/Agent2-Application-Integration.md
+docs/Agent2-Quality-Review.md
+docs/Agent7-Application-Integration.md
+docs/Architecture.md
+docs/Bug.md
+docs/Constraints.md
+docs/Decisions.md
+docs/Feature.md
+docs/Flow.md
+docs/Meridian-Integration.md
+docs/Model-Artifact-Audit.md
+docs/README.md
+docs/Roadmap.md
+docs/Test-Checklist.md
+meridian/components/book.py
+meridian/components/navbar.py
+meridian/data/profile.py
+meridian/meridian.py
+meridian/pages/account.py
+meridian/pages/analysis.py
+meridian/pages/documents.py
+meridian/pages/landing.py
+meridian/pages/profile.py
+meridian/pages/results.py
+meridian/services/agent2.py
+meridian/services/agent2_worker.py
+meridian/services/agent7.py
+meridian/services/agent7_worker.py
+meridian/services/api.py
+meridian/services/storage.py
+meridian/state.py
+README.md
+reflex.lock/bun.lock
+reflex.lock/package.json
+requirements.txt
+scripts/audit_agent2_quality.py
+scripts/compile_meridian.py
+scripts/run_agent2_notebook.py
+scripts/smoke_integration.py
+scripts/start_meridian.ps1
+tests/agent2_browser_check.cjs
+tests/test_agent2_catalog.py
+tests/test_agent2_integration.py
+tests/test_agent2_live.py
+tests/test_agent7_integration.py
+tests/test_meridian_integration.py
+docs/Integration-Files.txt

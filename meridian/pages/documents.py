@@ -1,9 +1,10 @@
-import reflex as rx
+﻿import reflex as rx
 
 from ..components.common import label, primary_button
 from ..components.navbar import journey_nav
 from ..data import mock
 from ..state import State
+from .account import notice
 
 _HANDLERS = {
     "resume": State.upload_resume, "transcript": State.upload_transcript,
@@ -15,8 +16,8 @@ def _slot(d: dict):
     slot, uid = d["slot"], f"up_{d['slot']}"
     empty = rx.el.div(
         label(d["label"], "ink"),
-        rx.el.p("Drop a file here or click to choose", class_name="serif", style={"fontSize": "20px", "fontWeight": 600, "margin": "6px 0 2px"}),
-        rx.el.span(d["hint"], style={"fontSize": "13px", "color": "var(--ink-soft)"}),
+        rx.el.p("Document upload not connected", class_name="serif", style={"fontSize": "20px", "fontWeight": 600, "margin": "6px 0 2px"}),
+        rx.el.span("Formats and size limits will be published when the processing API is connected.", style={"fontSize": "13px", "color": "var(--ink-soft)"}),
         class_name="drop",
     )
     filled = rx.el.div(
@@ -26,7 +27,7 @@ def _slot(d: dict):
             rx.el.p(State.docs[f"{slot}_name"], class_name="trunc", style={"margin": "6px 0 4px", "fontWeight": 600}),
             rx.el.div(
                 rx.el.span(State.docs[f"{slot}_size"], class_name="mono"),
-                rx.el.span("✓ Received", class_name="mono blue", style={"fontWeight": 600}),
+                rx.el.span("âœ“ Received", class_name="mono blue", style={"fontWeight": 600}),
                 class_name="row", style={"gap": "16px"},
             ),
             style={"minWidth": 0},
@@ -36,7 +37,7 @@ def _slot(d: dict):
     return rx.el.div(
         rx.upload.root(
             rx.cond(State.uploaded_slots.contains(slot), filled, empty),
-            id=uid, max_files=1, multiple=False,
+            id=uid, max_files=1, multiple=False, disabled=True,
             accept={"application/pdf": [".pdf"], "application/msword": [".doc"],
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
                     "text/plain": [".txt"], "image/*": [".png", ".jpg", ".jpeg"]},
@@ -55,12 +56,13 @@ def _slot(d: dict):
 def documents_page():
     return rx.el.div(
         journey_nav(1),
+        notice(),
         rx.el.main(
             rx.el.div(
                 rx.el.div(
                     label("Step 2 of 4", "blue"),
                     rx.el.h1("Admissions desk", class_name="h1", style={"marginTop": "10px"}),
-                    rx.el.p("Add the documents the agents should read. Nothing is required, but each one sharpens your results.", class_name="lede", style={"marginTop": "14px"}),
+                    rx.el.p("Document processing is unavailable. No upload, OCR, extraction, or confirmation endpoint exists in the backend. Files are not stored; you can continue with your profile.", class_name="lede", style={"marginTop": "14px"}),
                     class_name="page-enter", style={"marginBottom": "40px"},
                 ),
                 rx.el.div(
@@ -74,7 +76,7 @@ def documents_page():
                         class_name="row", style={"gap": "10px", "alignItems": "baseline"},
                     ),
                     rx.el.div(
-                        rx.el.button("Use sample documents", on_click=State.load_sample_documents, type="button", class_name="btn-ghost"),
+
                         primary_button("Start analysis", rx.redirect("/analysis")),
                         class_name="row wrap", style={"gap": "16px"},
                     ),

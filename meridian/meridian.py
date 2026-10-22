@@ -9,9 +9,10 @@ from .pages.profile import profile_page
 from .pages.report import report_page
 from .pages.results import results_page
 from .state import State
+from .pages.account import login_page, register_page, dashboard_page, protected
 
 app = rx.App(
-    stylesheets=[theme.GOOGLE_FONTS],
+    stylesheets=[theme.GOOGLE_FONTS, "/enhancements.css"],
     head_components=[
         rx.el.link(rel="icon", href="/favicon.svg", type="image/svg+xml"),
         rx.el.style(theme.GLOBAL_CSS),
@@ -24,8 +25,11 @@ app = rx.App(
 
 TITLE = "MERIDIAN — You bring the ambition. We map the journey."
 app.add_page(landing_page, route="/", title=TITLE)
-app.add_page(profile_page, route="/profile", title="Student profile · MERIDIAN")
-app.add_page(documents_page, route="/documents", title="Documents · MERIDIAN")
-app.add_page(analysis_page, route="/analysis", title="Analysis · MERIDIAN", on_load=State.run_agents)
-app.add_page(results_page, route="/results", title="Your dossier · MERIDIAN")
-app.add_page(report_page, route="/report", title="Report · MERIDIAN")
+app.add_page(login_page, route="/login", title="Sign in · MERIDIAN")
+app.add_page(register_page, route="/register", title="Create your dossier · MERIDIAN")
+app.add_page(dashboard_page, route="/dashboard", title="Dashboard · MERIDIAN", on_load=State.require_auth)
+app.add_page(lambda: protected(profile_page()), route="/profile", title="Student profile · MERIDIAN", on_load=State.require_auth)
+app.add_page(lambda: protected(documents_page()), route="/documents", title="Documents · MERIDIAN", on_load=State.require_auth)
+app.add_page(lambda: protected(analysis_page()), route="/analysis", title="Analysis · MERIDIAN", on_load=State.require_auth)
+app.add_page(lambda: protected(results_page()), route="/results", title="Your dossier · MERIDIAN", on_load=State.require_auth)
+app.add_page(lambda: protected(results_page()), route="/report", title="Report · MERIDIAN", on_load=State.require_auth)

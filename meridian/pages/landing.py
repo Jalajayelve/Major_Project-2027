@@ -7,6 +7,7 @@ from ..components.globe3d import globe3d
 from ..components.overlay import opening_overlay
 from ..components.scene import scene
 from ..data import mock
+from ..components.book import book
 
 
 def hero():
@@ -21,8 +22,8 @@ def hero():
                 ),
                 rx.el.p("You bring the ambition.", rx.el.br(), "We map the journey.", class_name="tagline", style={"marginTop": "30px"}),
                 rx.el.p(
-                    "Seven specialist agents study your profile, your documents and the US programs that fit, "
-                    "then hand you one personal dossier: where to apply, your odds, what it costs and how to fund it.",
+                    "Build your profile and explore university catalog matches. "
+                    "Additional specialist agents will appear as their backend services become available.",
                     class_name="lede", style={"marginTop": "26px"},
                 ),
                 rx.el.div(
@@ -80,7 +81,7 @@ def journey_band():
             rx.el.div(
                 rx.el.div(rx.el.hr(class_name="rule-blue"), label("The journey", "on-navy"), class_name="row", style={"gap": "14px"}),
                 rx.el.h2("Seven agents. One investigation.", class_name="h2", style={"marginTop": "14px", "color": "var(--ivory)"}),
-                rx.el.p("Each agent takes one question about your future abroad and answers it before the next one begins.", class_name="body", style={"marginTop": "10px", "color": "rgba(246,242,234,.72)", "maxWidth": "58ch"}),
+                rx.el.p("Our seven-agent roadmap. The analysis screen identifies which services are connected and which remain unavailable.", class_name="body", style={"marginTop": "10px", "color": "rgba(246,242,234,.72)", "maxWidth": "58ch"}),
                 style={"marginBottom": "44px"},
             ),
             rx.el.div(*stops, style={"display": "grid", "gridTemplateColumns": "repeat(auto-fit,minmax(170px,1fr))", "gap": "36px 28px", "maxWidth": "800px"}),
@@ -122,4 +123,8 @@ def about():
 
 
 def landing_page():
-    return rx.el.div(navbar(), hero(), how_it_works(), journey_band(), about(), opening_overlay())
+    return rx.el.div(navbar(), hero(), chapter(), how_it_works(), journey_band(), about(), opening_overlay())
+
+
+def chapter():
+    return rx.el.section(rx.el.div(book(), rx.el.div(label("A world ahead", "blue"), rx.el.h2("Your next chapter, bound in possibility.", class_name="h2"), rx.el.p("Gather your ambitions in a personal dossier, explore available university matches, and keep your next steps together.", class_name="lede"), start_button()), class_name="container chapter-grid"), class_name="section")
