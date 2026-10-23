@@ -136,77 +136,6 @@ def analysis_page():
                         style={"marginBottom": "56px"}, class_name="page-enter",
                     ),
                     rx.el.div(rx.el.button("Run / retry analysis", on_click=State.run_agents, disabled=State.agents_running, class_name="tab-button on-navy"), rx.el.a("Dashboard", href="/dashboard", class_name="btn-ghost"), style={"marginBottom":"24px"}),
-                    rx.cond(
-                        State.prediction_unavailable,
-                        rx.el.div(
-                            rx.el.h2("Profile prediction unavailable", class_name="h2"),
-                            rx.el.p(
-                                "The matching results below are still valid. No profile prediction is shown; the backend error above explains whether input data or the unavailable MS/MBA model caused the failure.",
-                                class_name="body", style={"marginTop": "10px"},
-                            ),
-                            class_name="notice", role="status", style={"maxWidth": "860px", "marginTop": "32px"},
-                        ),
-                        rx.fragment(),
-                    ),
-                    rx.cond(
-                        State.profile_analysis_available,
-                        rx.el.section(
-                            rx.el.h2("Student profile analysis", class_name="h2"),
-                            rx.el.p(State.profile_analysis_summary, class_name="lede", style={"marginTop": "10px"}),
-                            rx.el.p(
-                                "Agent 1 candidate-tier classification. This is not an admission probability.",
-                                class_name="body", style={"marginTop": "8px"},
-                            ),
-                            style={"maxWidth": "860px", "marginTop": "32px"},
-                        ),
-                        rx.fragment(),
-                    ),
-                    rx.cond(
-                        State.recommendations.length() > 0,
-                        rx.el.section(
-                            rx.el.div(
-                                rx.el.h2("University matching results", class_name="h2"),
-                                rx.el.p(
-                                    "These are the universities returned by the backend catalog matcher.",
-                                    class_name="body", style={"marginTop": "8px"},
-                                ),
-                                class_name="page-enter",
-                            ),
-                            rx.el.div(rx.foreach(State.recommendations, university_card), class_name="grid-2", style={"marginTop": "20px"}),
-                            style={"maxWidth": "860px", "marginTop": "44px"},
-                        ),
-                        rx.fragment(),
-                    ),
-                    rx.cond(
-                        State.program_results.length() > 0,
-                        rx.el.section(
-                            rx.el.h2("Program rankings", class_name="h2"),
-                            rx.el.p(
-                                "Agent 3 ranked programs from the universities returned by Agent 2. Scores are relevance rankings, not admission probabilities.",
-                                class_name="body", style={"marginTop": "8px"},
-                            ),
-                            rx.el.div(
-                                rx.foreach(
-                                    State.program_results,
-                                    lambda row: rx.el.article(
-                                        rx.el.h3(row["program_name"], class_name="h3"),
-                                        rx.el.p(row["university"], class_name="body", style={"marginTop": "6px"}),
-                                        rx.el.p(
-                                            "Fit score: ", row["specialization_fit_score"],
-                                            " · Match score: ", row["match_score"],
-                                            " · ", row["duration"], " · ", row["mode"],
-                                            class_name="mono", style={"marginTop": "8px"},
-                                        ),
-                                        class_name="sheet sheet-pad stacked",
-                                    ),
-                                ),
-                                class_name="grid-2", style={"marginTop": "20px"},
-                            ),
-                            style={"maxWidth": "860px", "marginTop": "44px"},
-                        ),
-                        rx.fragment(),
-                    ),
-                    rx.el.section(rx.el.h2("Extracurricular analysis", class_name="h2"), rx.el.p(State.agent7_summary, class_name="body"), style={"marginTop": "32px"}),
                     rx.el.div(rx.foreach(State.agents, _agent), class_name="route", style={"maxWidth": "860px", "marginTop": "36px"}),
                     rx.el.div(
                         rx.el.div(
@@ -215,9 +144,16 @@ def analysis_page():
                         ),
                         rx.cond(
                             State.agents_done,
-                            rx.el.button(
-                                rx.el.span("View available results"), rx.el.span("→", class_name="tab-arrow"),
-                                on_click=rx.redirect("/results"), type="button", class_name="tab-button on-navy",
+                            rx.el.div(
+                                rx.el.p(
+                                    "Analysis is complete. Open Results to view the saved profile, university, program, and extracurricular outputs.",
+                                    class_name="body on-navy",
+                                ),
+                                rx.el.button(
+                                    rx.el.span("Open results"), rx.el.span("→", class_name="tab-arrow"),
+                                    on_click=rx.redirect("/results"), type="button", class_name="tab-button on-navy",
+                                ),
+                                class_name="row wrap", style={"gap": "24px", "alignItems": "center"},
                             ),
                             rx.fragment(),
                         ),

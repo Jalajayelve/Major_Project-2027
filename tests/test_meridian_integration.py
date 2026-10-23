@@ -125,10 +125,12 @@ def test_analysis_page_renders_partial_matching_results():
     from meridian.pages.analysis import analysis_page
 
     rendered = str(analysis_page())
-    assert 'University matching results' in rendered
-    assert 'These are the universities returned by the backend catalog matcher.' in rendered
-    assert 'Profile prediction unavailable' in rendered
     assert 'Run / retry analysis' in rendered
+    assert 'Open results' in rendered
+    assert 'Analysis is complete. Open Results' in rendered
+    assert 'University matching results' not in rendered
+    assert 'Program rankings' not in rendered
+    assert 'Extracurricular analysis' not in rendered
     assert 'Unavailable' in rendered
     assert 'No verified backend service is configured' in rendered
 
