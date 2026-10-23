@@ -44,14 +44,23 @@ async def main():
         state = State(_reflex_internal_init=True)
         state.session = storage.authenticate('smoke@example.com', 'disposable smoke test password', True, 'Smoke Test')
         storage.save(state.session, 'profile', {'gpa':'3.4','gpa_scale':'4','degree_goal':'MS','work_years':'1',
-            'gre_verbal':'150','gre_quant':'160','toefl':'100','research_experience':'0','match_country':'USA','match_tier':'medium'})
+            'gre_verbal':'150','gre_quant':'160','toefl':'100','research_experience':'0','match_country':'USA',
+            'match_tier':'medium','leadership_score':'6','research_score':'9','competition_score':'5',
+            'volunteering_score':'4','publication_count':'3','patent_count':'0',
+            'agent7_degree_level':'Masters','agent7_field':'STEM'})
         async for _ in State.run_agents.fn(Harness(state)):
             pass
-        assert state.agents[0]['status'] == 'failed'
-        assert state.agents[1]['status'] == 'completed'
+        statuses = {row['id']: row['status'] for row in state.agents}
+        assert statuses['profile'] == 'completed'
+        assert statuses['extracurricular'] == 'completed'
+        assert statuses['university'] == 'completed'
+        assert statuses['program'] == 'completed'
         assert not state.agents_running
         assert state.recommendations[0]['name'] == 'Northeastern University'
-        assert json.loads(storage.user(state.session)['results'])['university']['count'] == 1
+        results = json.loads(storage.user(state.session)['results'])
+        assert results['university']['count'] == 1
+        assert results['extracurricular']['strength_tier'] in ('Weak', 'Moderate', 'Strong')
+        assert 0 <= results['extracurricular']['profile_strength_score'] <= 100
         state.download_report()
         state.logout()
         assert not state.authenticated
