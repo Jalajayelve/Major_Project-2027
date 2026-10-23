@@ -17,10 +17,20 @@ from .services.agent7 import Agent7Service, Agent7Unavailable, NOTICE as AGENT7_
 
 logger = logging.getLogger(__name__)
 
+AGENT7_RESULT_KEYS = frozenset({
+    "strength_tier", "profile_strength_score", "P(Strong)",
+    "achievement_archetype", "has_research_evidence",
+})
+
 
 def agent7_report_text(results):
     result = results.get('extracurricular')
-    if not result:
+    if not isinstance(result, dict) or not AGENT7_RESULT_KEYS.issubset(result):
+        errors = results.get('_errors', [])
+        agent7_errors = [error.split(': ', 1)[1] for error in errors
+                         if isinstance(error, str) and error.startswith('extracurricular: ')]
+        if agent7_errors:
+            return f"Agent 7 could not complete: {agent7_errors[-1]}"
         return 'Agent 7: Not scored. Complete the eight structured Experience fields and run analysis. Unknown values should remain blank; zero means known absence.'
     return (f"Agent 7 extracurricular strength: {result['profile_strength_score']} / 100; "
             f"tier: {result['strength_tier']}; P(Strong): {result['P(Strong)']}; "
@@ -480,32 +490,33 @@ class State(rx.State):
 
     @rx.var
     def agent7_available(self) -> bool:
-        return isinstance(self.results.get("extracurricular"), dict)
+        result = self.results.get("extracurricular")
+        return isinstance(result, dict) and AGENT7_RESULT_KEYS.issubset(result)
 
     @rx.var
     def agent7_score(self) -> str:
         result = self.results.get("extracurricular", {})
-        return str(result.get("profile_strength_score", "Not scored")) if isinstance(result, dict) else "Not scored"
+        return str(result.get("profile_strength_score", "Not scored")) if self.agent7_available and isinstance(result, dict) else "Not scored"
 
     @rx.var
     def agent7_tier(self) -> str:
         result = self.results.get("extracurricular", {})
-        return str(result.get("strength_tier", "Not scored")) if isinstance(result, dict) else "Not scored"
+        return str(result.get("strength_tier", "Not scored")) if self.agent7_available and isinstance(result, dict) else "Not scored"
 
     @rx.var
     def agent7_probability(self) -> str:
         result = self.results.get("extracurricular", {})
-        return str(result.get("P(Strong)", "Not scored")) if isinstance(result, dict) else "Not scored"
+        return str(result.get("P(Strong)", "Not scored")) if self.agent7_available and isinstance(result, dict) else "Not scored"
 
     @rx.var
     def agent7_archetype(self) -> str:
         result = self.results.get("extracurricular", {})
-        return str(result.get("achievement_archetype", "Not scored")) if isinstance(result, dict) else "Not scored"
+        return str(result.get("achievement_archetype", "Not scored")) if self.agent7_available and isinstance(result, dict) else "Not scored"
 
     @rx.var
     def agent7_research_evidence(self) -> str:
         result = self.results.get("extracurricular", {})
-        return "Yes" if isinstance(result, dict) and result.get("has_research_evidence") else "No"
+        return "Yes" if self.agent7_available and isinstance(result, dict) and result.get("has_research_evidence") else "No"
 
     @rx.var
     def agents_done(self) -> bool:

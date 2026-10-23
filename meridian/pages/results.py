@@ -160,7 +160,7 @@ def results_page():
             "04",
             "Extracurricular strength",
             "Beyond grades and scores",
-            rx.cond(State.agent7_available, R.live_extracurricular(), rx.el.p(State.agent7_summary, class_name="body")),
+            rx.cond(State.agent7_available, R.live_extracurricular(), rx.el.p(State.agent7_summary, class_name="notice")),
         ),
         rx.el.section(label("Additional chapters"), rx.el.h2("Still to come", class_name="h2"), rx.el.p("Financial, scholarship and career analysis are unavailable through the current API. No scores or estimates have been generated for those sections.", class_name="body"), class_name="sheet sheet-pad"),
         rx.el.details(rx.el.summary("Inspect the actual API response"), rx.el.pre(State.result_json, style={"whiteSpace":"pre-wrap","overflowWrap":"anywhere"}), class_name="sheet sheet-pad"),

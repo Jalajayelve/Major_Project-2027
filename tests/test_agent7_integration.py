@@ -132,6 +132,20 @@ def test_concurrent_saved_profile_change_cannot_publish(state, other_agents, mon
 
 def test_results_and_printable_route_include_live_summary():
     from meridian.pages.results import results_page
-    assert 'Beyond grades and scores' in str(results_page())
-    assert 'agent7_summary' in str(results_page())
+    rendered = str(results_page())
+    assert 'Beyond grades and scores' in rendered
+    assert 'agent7_summary' in rendered
+    assert 'Strength tier' in rendered
+    assert 'P(Strong)' in rendered
+    assert 'Achievement archetype' in rendered
     assert 'Not scored' in agent7_report_text({})
+
+
+def test_incomplete_persisted_agent7_result_is_not_available(state):
+    state.results = {
+        "extracurricular": {"profile_strength_score": 72},
+        "_errors": ["extracurricular: Complete Agent 7 fields in Experience."],
+    }
+    assert not state.agent7_available
+    assert state.agent7_score == "Not scored"
+    assert "could not complete" in state.agent7_summary
