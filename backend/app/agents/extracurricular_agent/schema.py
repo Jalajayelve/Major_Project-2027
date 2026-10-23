@@ -12,7 +12,7 @@ COUNTS = ["publication_count", "patent_count"]
 CLUSTER_COLUMNS = SCORES + COUNTS
 CATEGORIES = {
     "degree_level": ["Bachelors", "Masters", "PhD-applicant"],
-    "field": ["STEM", "Business", "SocialSci", "Arts", "Other"],
+    "field": ["Arts", "Business", "Other", "STEM", "SocialSci"],
 }
 REQUIRED_INPUTS = CLUSTER_COLUMNS + list(CATEGORIES)
 

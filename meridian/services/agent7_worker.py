@@ -6,8 +6,8 @@ import sys
 
 def main():
     root = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(root))
-    from backend.app.agents.extracurricular_agent.predict import score_extracurricular
+    sys.path.insert(0, str(root / 'backend/app/agents'))
+    from extracurricular_agent.predict import score_extracurricular
 
     candidate = json.load(sys.stdin)
     result = score_extracurricular(

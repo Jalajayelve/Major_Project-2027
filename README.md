@@ -18,6 +18,9 @@ Install each environment first using the guide. Open http://localhost:3000.
 Flow: landing → cinematic transition → login/registration → dashboard → profile
 → private document upload and text preview → real API analysis → saved dossier.
 
-Matching currently uses the teammate's rule-based catalog endpoint. The expected
-MS/MBA prediction model exports and verified Agent 2/7 bundles are missing; the
-interface reports these limitations and does not fabricate model results.
+Matching uses the existing rule-based catalog endpoint, followed by Agent 3
+program ranking. Agent 7 now scores documented extracurricular inputs with its
+verified recovered bundle and saves results to the dossier and PDF. See the
+[Agent 7 setup and verification report](docs/Agent7-Application-Integration.md).
+The separate MS/MBA outcome exports and optional experimental Agent 2 bundle
+remain unavailable; no substitute predictions are generated.

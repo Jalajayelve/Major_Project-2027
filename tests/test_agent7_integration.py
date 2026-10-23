@@ -1,125 +1,137 @@
-"""Integration checks: inference only, no training or artifact writes.
-
-Run: python -B -m unittest discover -s tests -p test_agent7_integration.py -v
-MERIDIAN_AGENT7_PYTHON must select the verified model runtime if different.
-"""
+﻿"""Real Agent 7 inference through the authenticated Meridian workflow."""
 import asyncio
-import copy
-import os
-from pathlib import Path
-import tempfile
-import unittest
-from unittest.mock import patch
+import io
+import json
+import subprocess
+import pytest
+from pypdf import PdfReader
+from meridian.data.profile import empty_profile
+from meridian.services import api, storage, validation
+from meridian.services.agent7 import Agent7Service, candidate_from_profile
+from meridian.services.agent2 import candidate_from_profile as agent2_candidate
+from meridian.state import State, agent7_report_text
+from test_meridian_integration import BackgroundHarness
 
-from meridian.data import mock
-from meridian.services.agent7 import Agent7Service, Agent7Unavailable, candidate_from_profile
-from meridian.services.report_pdf import render_report_pdf
-from meridian.state import State
+INPUTS = dict(leadership_score='6', research_score='9', competition_score='5',
+              volunteering_score='4', publication_count='3', patent_count='0',
+              agent7_degree_level='Masters', agent7_field='STEM')
+PROFILE = {**empty_profile(), **INPUTS, 'full_name': 'Agent 7 test', 'gpa': '3.4',
+           'gpa_scale': '4', 'degree_goal': 'MS', 'field': 'Computer Science',
+           'match_country': 'USA', 'match_tier': 'medium'}
 
-TEST_PROFILE = {
-    **mock.STUDENT_PROFILE, "full_name": "TEST PROFILE - Agent 7 integration",
-    "leadership_score": "6", "research_score": "9", "competition_score": "5",
-    "volunteering_score": "4", "publication_count": "3", "patent_count": "0",
-    "agent7_degree_level": "Masters", "agent7_field": "STEM",
-}
+@pytest.fixture
+def state(tmp_path, monkeypatch):
+    monkeypatch.setenv('MERIDIAN_DATA_DIR', str(tmp_path))
+    token = storage.authenticate('agent7@example.com', 'test password long enough', True, 'Test')
+    storage.save(token, 'profile', PROFILE)
+    value = State(_reflex_internal_init=True)
+    value.session = token
+    value._load()
+    return value
 
+def run(state):
+    async def consume():
+        return [event async for event in State.run_agents.fn(BackgroundHarness(state))]
+    asyncio.run(consume())
 
-class IntegrationTests(unittest.TestCase):
-    def test_failed_submission_stays_put_and_can_retry_from_experience(self):
-        state = State(_reflex_internal_init=True)
-        state.profile = {**TEST_PROFILE, "research_score": ""}
-        final_tab = len(mock.FORM_SCHEMA) - 1
-        state.profile_tab = final_tab
-        async def submit():
-            return [event async for event in state.next_tab()]
-        with patch("meridian.state.Agent7Service.score_profile") as score:
-            asyncio.run(submit())
-            score.assert_not_called()
-        self.assertEqual(state.profile_tab, final_tab)
-        self.assertTrue(state.profile_submission_attempted)
-        self.assertIn("research_score", state.agent7_error)
-        self.assertFalse(state.agent7_busy)
-        experience = next(i for i,s in enumerate(mock.FORM_SCHEMA) if s['id']=='experience')
-        state.set_tab(experience)
-        state.set_field("research_score", "9")
-        with patch("meridian.state.Agent7Service.score_profile", side_effect=Agent7Unavailable("Runtime unavailable")):
-            asyncio.run(submit())
-        self.assertEqual(state.profile_tab, experience)
-        self.assertEqual(state.agent7_error, "Runtime unavailable")
-        with patch("meridian.state.Agent7Service.score_profile", return_value={"profile_strength_score":55.4}):
-            events = asyncio.run(submit())
-        self.assertEqual(state.agent7_error, "")
-        self.assertIn("/documents", str(events[-1]))
+@pytest.fixture
+def other_agents(monkeypatch):
+    # Contract fixtures for other services only; Agent 7 uses real models.
+    calls = []
+    async def response(path, payload):
+        calls.append((path, payload))
+        if path == '/agent1/profile':
+            return {'prediction': 'Contract fixture'}
+        if path == '/match':
+            return {'matched_universities': [{'name': 'Fixture University', 'country': 'USA', 'tier': 'medium', 'gpa': 3.4}]}
+        return {'programs': []}
+    monkeypatch.setattr(api, 'request', response)
+    return calls
 
-    def test_missing_unknown_invalid_inputs(self):
-        variants = [(key, "") for key in candidate_from_profile(TEST_PROFILE) if key not in ("field", "degree_level")]
-        variants += [("agent7_field", ""), ("agent7_degree_level", ""), ("leadership_score", "11"),
-                     ("research_score", "nan"), ("competition_score", "-1"), ("patent_count", "1.5"),
-                     ("publication_count", True), ("agent7_field", "Computer Science")]
-        for key, value in variants:
-            with self.subTest(key=key, value=value), patch("meridian.services.agent7.subprocess.run") as run:
-                with self.assertRaises(ValueError):
-                    Agent7Service().score_profile({**TEST_PROFILE, key: value})
-                run.assert_not_called()
+@pytest.mark.parametrize('key,value', [('leadership_score', ''), ('research_score', 'nan'),
+    ('competition_score', '-1'), ('volunteering_score', '11'), ('publication_count', '1.5'),
+    ('patent_count', True), ('agent7_field', 'Computer Science'), ('agent7_degree_level', '')])
+def test_invalid_inputs_never_start_worker(key, value, monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail('Invalid input reached subprocess')
+    monkeypatch.setattr(subprocess, 'run', forbidden)
+    with pytest.raises(ValueError):
+        Agent7Service().score_profile({**PROFILE, key: value})
 
-    def test_no_dataset_score_or_free_text_inference(self):
-        value = candidate_from_profile({**TEST_PROFILE, "profile_strength_score": 99.99, "research": "invented free text"})
-        self.assertNotIn("profile_strength_score", value)
-        self.assertEqual(value["field"], "STEM")
-        self.assertEqual(value["publication_count"], 3)
+def test_form_validation_and_no_free_text_scores():
+    assert not validation.profile_errors(PROFILE)
+    assert 'publication_count' in validation.profile_errors({**PROFILE, 'publication_count': '1.5'})
+    assert 'profile_strength_score' not in candidate_from_profile({**PROFILE, 'profile_strength_score': 100, 'research': 'Invented'})
 
-    def test_missing_runtime_fails_without_fallback(self):
-        with patch.dict(os.environ, {"MERIDIAN_AGENT7_PYTHON": str(Path(tempfile.gettempdir()) / "missing-agent7-python.exe")}):
-            with self.assertRaises(Agent7Unavailable):
-                Agent7Service().score_profile(TEST_PROFILE)
+def test_real_worker_foreign_cwd_determinism_and_agent2_mapping(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    first = Agent7Service().score_profile(PROFILE)
+    assert first == Agent7Service().score_profile(PROFILE)
+    assert first['strength_tier'] in ('Weak', 'Moderate', 'Strong')
+    assert 0 <= first['profile_strength_score'] <= 100
+    assert 0 <= first['P(Strong)'] <= 1
+    low = Agent7Service().score_profile({**PROFILE, **{k: '0' for k in INPUTS if not k.startswith('agent7_')}})
+    assert low['profile_strength_score'] < first['profile_strength_score']
+    assert low['has_research_evidence'] == 0
+    mapped = agent2_candidate(PROFILE, first)
+    assert mapped['profile_strength_score'] == first['profile_strength_score']
+    assert 'tier_score' not in mapped
 
-    def test_real_submission_fresh_worker_foreign_cwd_and_pdf(self):
-        state = State(_reflex_internal_init=True)
-        state.profile = dict(TEST_PROFILE)
-        state.profile_tab = len(mock.FORM_SCHEMA) - 1
-        async def submit():
-            return [event async for event in state.next_tab()]
-        previous = Path.cwd()
-        try:
-            os.chdir(tempfile.gettempdir())
-            events = asyncio.run(submit())
-        finally:
-            os.chdir(previous)
-        self.assertTrue(events)
-        self.assertEqual(state.agent7_error, "")
-        self.assertFalse(state.agent7_busy)
-        self.assertEqual(state.agent7_result, {
-            "strength_tier": "Moderate", "profile_strength_score": 55.4, "P(Strong)": 0.156443,
-            "achievement_archetype": "1", "has_research_evidence": 1,
-        })
-        before = copy.deepcopy(mock.PROFILE_STRENGTH)
-        captured = {}
-        class ReportCapture:
-            def get_report(self, profile):
-                return mock.build_report(profile)
-            def render_pdf(self, report):
-                captured.update(report)
-                pdf = render_report_pdf(report)
-                self_test.assertTrue(pdf.startswith(b"%PDF"))
-                return pdf
-        self_test = self
-        with patch("meridian.state.get_report_service", return_value=ReportCapture()):
-            state.download_report()
-        self.assertEqual(captured["profile_strength"]["score"], "55.4")
-        self.assertIn("NOT admission probability", captured["agent7_notice"])
-        self.assertEqual(mock.PROFILE_STRENGTH, before)
-        state.set_field("research_score", "8")
-        self.assertEqual(state.agent7_result, {})
-        self.assertEqual(state.agent7_score, "Not scored")
+def test_analysis_persistence_reload_pdf_invalidation(state, other_agents, monkeypatch):
+    run(state)
+    result = state.results['extracurricular']
+    assert state.agents[6]['status'] == 'completed'
+    assert state.agents[1]['status'] == state.agents[2]['status'] == 'completed'
+    assert [path for path, _ in other_agents] == ['/agent1/profile', '/match', '/agent3/program']
+    assert set(other_agents[1][1]) == {'gpa', 'country', 'tier'}
+    assert json.loads(storage.user(state.session)['results'])['extracurricular'] == result
+    completed = next(row for row in storage.analysis_history(state.session) if row['agent'] == 'extracurricular' and row['status'] == 'completed')
+    assert json.loads(completed['result']) == result
+    restored = State(_reflex_internal_init=True)
+    restored.session = state.session
+    restored._load()
+    assert restored.agent7_summary == state.agent7_summary
+    assert restored.agents[6]['status'] == 'completed'
+    assert restored.agents_done
+    captured = {}
+    def download(**kwargs):
+        captured.update(kwargs)
+    monkeypatch.setattr('meridian.state.rx.download', download)
+    restored.download_report()
+    text = '\n'.join(page.extract_text() for page in PdfReader(io.BytesIO(captured['data'])).pages)
+    assert str(result['profile_strength_score']) in text
+    assert 'NOT admission probability' in text
+    assert result['strength_tier'] in text
+    restored.set_field('research_score', '8')
+    restored._save_profile()
+    assert restored.results == {}
+    assert json.loads(storage.user(state.session)['results']) == {}
 
-    def test_second_profile_has_different_real_result(self):
-        result = Agent7Service().score_profile({**TEST_PROFILE, "agent7_degree_level": "Bachelors",
-            "leadership_score": "1", "research_score": "1", "competition_score": "0",
-            "volunteering_score": "1", "publication_count": "0"})
-        self.assertEqual(result["strength_tier"], "Weak")
-        self.assertEqual(result["profile_strength_score"], 3.5)
-        self.assertEqual(result["has_research_evidence"], 0)
+def test_missing_runtime_preserves_other_results_and_retry(state, other_agents, monkeypatch):
+    with monkeypatch.context() as patch:
+        patch.setenv('MERIDIAN_AGENT7_PYTHON', 'missing-agent7-python.exe')
+        run(state)
+    assert 'extracurricular' not in state.results
+    assert state.agents[6]['status'] == 'failed'
+    assert state.agents[1]['status'] == state.agents[2]['status'] == 'completed'
+    assert 'no substitute score' in state.analysis_error
+    run(state)
+    assert state.agents[6]['status'] == 'completed'
 
+def test_concurrent_saved_profile_change_cannot_publish(state, other_agents, monkeypatch):
+    original = Agent7Service.score_profile
+    def changed(service, profile):
+        result = original(service, profile)
+        storage.save_profile(state.session, {**PROFILE, 'research_score': '7'}, PROFILE)
+        return result
+    monkeypatch.setattr(Agent7Service, 'score_profile', changed)
+    run(state)
+    assert not state.results
+    assert not json.loads(storage.user(state.session)['results'])
+    assert state.agents[6]['status'] == 'cancelled'
 
-if __name__ == "__main__":
-    unittest.main()
+def test_results_and_printable_route_include_live_summary():
+    from meridian.pages.results import results_page
+    assert 'Beyond grades and scores' in str(results_page())
+    assert 'agent7_summary' in str(results_page())
+    assert 'Not scored' in agent7_report_text({})

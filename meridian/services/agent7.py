@@ -56,7 +56,8 @@ def candidate_from_profile(profile: dict) -> dict:
 class Agent7Service:
     def score_profile(self, profile: dict) -> dict:
         candidate = candidate_from_profile(profile)
-        executable = os.environ.get("MERIDIAN_AGENT7_PYTHON") or sys.executable
+        local = Path(__file__).resolve().parents[2] / '.venv-agent7' / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
+        executable = os.environ.get("MERIDIAN_AGENT7_PYTHON") or (str(local) if local.is_file() else sys.executable)
         worker = Path(__file__).with_name("agent7_worker.py")
         try:
             completed = subprocess.run(

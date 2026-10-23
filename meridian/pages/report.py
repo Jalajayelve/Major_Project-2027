@@ -67,7 +67,12 @@ def report_page():
                 _page("04", "Scholarships", R.scholarships(), "Funding"),
                 _page("05", "Career alignment", R.career(), "Career"),
                 _page("06", "Profile strength", R.profile_strength(), "Profile"),
-                _page("07", "Extracurricular strength", R.extracurricular(), "Beyond grades"),
+                _page(
+                    "07",
+                    "Extracurricular strength",
+                    rx.cond(State.agent7_available, R.live_extracurricular(), R.extracurricular()),
+                    "Beyond grades",
+                ),
                 _page("08", "Key model factors", R.key_factors(), "Explainability"),
                 class_name="container", style={"padding": "48px 28px 110px"},
             ),

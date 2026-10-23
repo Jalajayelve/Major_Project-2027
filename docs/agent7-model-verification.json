@@ -1,0 +1,131 @@
+{
+  "fresh_restart_foreign_cwd": true,
+  "sop_offline_example": {
+    "input": "I am inspired by research. I built a project and plan to study Example University MS in Computing to achieve my goal.",
+    "output": {
+      "structural": {
+        "length_score": 0.034,
+        "personalization_score": 1.0,
+        "narrative_coherence": 1.0,
+        "structural_score": 0.71
+      },
+      "lexical_alignment_score": 0.143,
+      "semantic_alignment_score": null,
+      "alignment_method": "lexical_overlap_heuristic",
+      "llm_rubric": {
+        "clarity": null,
+        "specificity": null,
+        "program_alignment": null,
+        "authenticity_flags": [],
+        "status": "not_requested"
+      },
+      "sop_score": 42.6,
+      "limitations": "Heuristic rubric; no validated admission/authenticity prediction. Lexical overlap is not semantic understanding."
+    },
+    "combined_output": {
+      "strength_tier": "Moderate",
+      "profile_strength_score": 60.9,
+      "P(Strong)": 0.154371,
+      "achievement_archetype": "0",
+      "has_research_evidence": 1,
+      "sop_score": 42.6,
+      "sop_weight": 0.2,
+      "blended_profile_strength_score": 57.2,
+      "blend_basis": "heuristic weight, not calibrated against real outcomes"
+    }
+  },
+  "inputs": [
+    {
+      "degree_level": "Bachelors",
+      "field": "Arts",
+      "leadership_score": 0,
+      "research_score": 0,
+      "competition_score": 0,
+      "volunteering_score": 0,
+      "publication_count": 0,
+      "patent_count": 0
+    },
+    {
+      "degree_level": "Bachelors",
+      "field": "Business",
+      "leadership_score": 8,
+      "research_score": 1,
+      "competition_score": 7,
+      "volunteering_score": 5,
+      "publication_count": 0,
+      "patent_count": 0
+    },
+    {
+      "degree_level": "Masters",
+      "field": "STEM",
+      "leadership_score": 6,
+      "research_score": 9,
+      "competition_score": 5,
+      "volunteering_score": 4,
+      "publication_count": 3,
+      "patent_count": 0
+    },
+    {
+      "degree_level": "PhD-applicant",
+      "field": "SocialSci",
+      "leadership_score": 8,
+      "research_score": 10,
+      "competition_score": 8,
+      "volunteering_score": 7,
+      "publication_count": 5,
+      "patent_count": 1
+    },
+    {
+      "degree_level": "Masters",
+      "field": "Other",
+      "leadership_score": 4,
+      "research_score": 5,
+      "competition_score": 3,
+      "volunteering_score": 8,
+      "publication_count": 1,
+      "patent_count": 0
+    }
+  ],
+  "outputs": [
+    {
+      "strength_tier": "Weak",
+      "profile_strength_score": 3.0,
+      "P(Strong)": 0.001387,
+      "achievement_archetype": "3",
+      "has_research_evidence": 0
+    },
+    {
+      "strength_tier": "Weak",
+      "profile_strength_score": 20.0,
+      "P(Strong)": 0.001816,
+      "achievement_archetype": "1",
+      "has_research_evidence": 0
+    },
+    {
+      "strength_tier": "Moderate",
+      "profile_strength_score": 60.9,
+      "P(Strong)": 0.154371,
+      "achievement_archetype": "0",
+      "has_research_evidence": 1
+    },
+    {
+      "strength_tier": "Strong",
+      "profile_strength_score": 100.0,
+      "P(Strong)": 0.904708,
+      "achievement_archetype": "0",
+      "has_research_evidence": 1
+    },
+    {
+      "strength_tier": "Weak",
+      "profile_strength_score": 38.3,
+      "P(Strong)": 0.01056,
+      "achievement_archetype": "1",
+      "has_research_evidence": 1
+    }
+  ],
+  "tests_run": 8,
+  "passed": true,
+  "log": "test_determinism (__main__.verify.<locals>.Checks.test_determinism) ... ok\ntest_fresh_process_from_unrelated_working_directory (__main__.verify.<locals>.Checks.test_fresh_process_from_unrelated_working_directory) ... ok\ntest_invalid_input_does_not_silently_fill_or_clip (__main__.verify.<locals>.Checks.test_invalid_input_does_not_silently_fill_or_clip) ... ok\ntest_missing_and_corrupt_bundle_errors (__main__.verify.<locals>.Checks.test_missing_and_corrupt_bundle_errors) ... ok\ntest_optional_sop_providers_and_unavailable_resume (__main__.verify.<locals>.Checks.test_optional_sop_providers_and_unavailable_resume) ... ok\ntest_required_output_fields_and_ranges (__main__.verify.<locals>.Checks.test_required_output_fields_and_ranges) ... ok\ntest_sop_offline_and_blending_keep_model_output (__main__.verify.<locals>.Checks.test_sop_offline_and_blending_keep_model_output) ... ok\ntest_wrong_artifact_type_is_rejected (__main__.verify.<locals>.Checks.test_wrong_artifact_type_is_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 3.665s\n\nOK\n",
+  "process_id": 17936,
+  "python": "C:\\Users\\DELL\\Downloads\\Major_Project-2027\\.venv-agent7\\Scripts\\python.exe"
+}

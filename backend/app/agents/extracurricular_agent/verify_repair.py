@@ -14,9 +14,9 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(ROOT))
-from backend.app.agents.extracurricular_agent.predict import ArtifactError, agent7_full_pipeline, agent7_output_to_state, score_extracurricular
-from backend.app.agents.extracurricular_agent.sop import combine_scores, score_sop
+sys.path.insert(0, str(ROOT / 'backend/app/agents'))
+from extracurricular_agent.predict import ArtifactError, agent7_full_pipeline, agent7_output_to_state, score_extracurricular
+from extracurricular_agent.sop import combine_scores, score_sop
 
 
 def verify(directory: Path):
@@ -47,8 +47,8 @@ def verify(directory: Path):
 
         def test_fresh_process_from_unrelated_working_directory(self):
             with tempfile.TemporaryDirectory(prefix="agent7_restart_") as tmp:
-                env = dict(os.environ, PYTHONPATH=str(ROOT), PYTHONDONTWRITEBYTECODE="1")
-                p=subprocess.run([sys.executable,"-B","-m","backend.app.agents.extracurricular_agent.predict","--input-json",str(Path(__file__).parent/"example_applicants.json"),"--model-dir",str(directory)],cwd=tmp,env=env,text=True,capture_output=True,check=True)
+                env = dict(os.environ, PYTHONPATH=str(ROOT / 'backend/app/agents'), PYTHONDONTWRITEBYTECODE="1")
+                p=subprocess.run([sys.executable,"-B","-m","extracurricular_agent.predict","--input-json",str(Path(__file__).parent/"example_applicants.json"),"--model-dir",str(directory)],cwd=tmp,env=env,text=True,capture_output=True,check=True)
                 self.assertEqual(json.loads(p.stdout),outputs)
                 results["fresh_restart_foreign_cwd"] = True
 

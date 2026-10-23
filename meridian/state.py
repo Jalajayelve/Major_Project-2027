@@ -13,12 +13,24 @@ import reflex as rx
 from .data import mock
 from .data.profile import FORM_SCHEMA, US_STATES, empty_profile
 from .services import storage, api, validation, documents
+from .services.agent7 import Agent7Service, Agent7Unavailable, NOTICE as AGENT7_NOTICE
 
 logger = logging.getLogger(__name__)
 
 
+def agent7_report_text(results):
+    result = results.get('extracurricular')
+    if not result:
+        return 'Agent 7: Not scored. Complete the eight structured Experience fields and run analysis. Unknown values should remain blank; zero means known absence.'
+    return (f"Agent 7 extracurricular strength: {result['profile_strength_score']} / 100; "
+            f"tier: {result['strength_tier']}; P(Strong): {result['P(Strong)']}; "
+            f"achievement archetype: Cluster {result['achievement_archetype']}; "
+            f"research evidence reported: {'Yes' if result['has_research_evidence'] else 'No'}. "
+            + AGENT7_NOTICE)
+
+
 def initial_agents():
-    return [{**a, 'status': 'waiting' if a['id'] in ('profile', 'university', 'program') else 'unavailable', 'pct': '', 'progress': 0} for a in mock.AGENTS]
+    return [{**a, 'status': 'waiting' if a['id'] in ('profile', 'university', 'program', 'extracurricular') else 'unavailable', 'pct': '', 'progress': 0} for a in mock.AGENTS]
 
 
 class State(rx.State):
@@ -48,7 +60,7 @@ class State(rx.State):
     upload_errors: dict[str, str] = {}
 
     def _error(self, exc):
-        if isinstance(exc, ValueError):
+        if isinstance(exc, (ValueError, Agent7Unavailable)):
             return str(exc)
         logger.exception('Meridian operation failed')
         return 'The operation could not be completed. Please retry; your saved information is retained.'
@@ -94,7 +106,14 @@ class State(rx.State):
         self.docs = json.loads(account['documents'])
         self.uploaded_slots = [s['slot'] for s in mock.DOC_SLOTS if self.docs.get(s['slot']+'_name')]
         self.results = json.loads(account['results'])
-        self.event_log = self.results.get('_errors', [])
+        errors = self.results.get('_errors', [])
+        self.agents = initial_agents()
+        for row in self.agents:
+            if row['id'] in self.results:
+                row['status'] = 'completed'
+            elif any(error.startswith(row['id'] + ':') for error in errors):
+                row['status'] = 'failed'
+        self.event_log = [f"{row['id']}: completed" for row in self.agents if row['status'] == 'completed'] + errors
         self._recommendations()
         self.authenticated = True
 
@@ -375,7 +394,8 @@ class State(rx.State):
             profile = dict(self.profile)
             token = self.session
         try:
-            for index, agent in enumerate(('profile', 'university', 'program')):
+            for agent in ('profile', 'extracurricular', 'university', 'program'):
+                index = next(i for i, row in enumerate(self.agents) if row['id'] == agent)
                 started_at = time.time()
                 storage.record_analysis_event(token, agent, 'running', started_at)
                 async with self:
@@ -388,6 +408,8 @@ class State(rx.State):
                         result = await asyncio.wait_for(api.request('/agent1/profile', payload), timeout=50)
                         if 'prediction' not in result:
                             raise ValueError('Agent 1 returned an invalid response.')
+                    elif agent == 'extracurricular':
+                        result = await asyncio.to_thread(Agent7Service().score_profile, profile)
                     elif agent == 'university':
                         if not profile.get('match_country') or not profile.get('match_tier'):
                             raise ValueError('Choose matching country and catalog tier in Study goals.')
@@ -451,6 +473,39 @@ class State(rx.State):
         finally:
             async with self:
                 self.agents_running = False
+
+    @rx.var
+    def agent7_summary(self) -> str:
+        return agent7_report_text(self.results)
+
+    @rx.var
+    def agent7_available(self) -> bool:
+        return isinstance(self.results.get("extracurricular"), dict)
+
+    @rx.var
+    def agent7_score(self) -> str:
+        result = self.results.get("extracurricular", {})
+        return str(result.get("profile_strength_score", "Not scored")) if isinstance(result, dict) else "Not scored"
+
+    @rx.var
+    def agent7_tier(self) -> str:
+        result = self.results.get("extracurricular", {})
+        return str(result.get("strength_tier", "Not scored")) if isinstance(result, dict) else "Not scored"
+
+    @rx.var
+    def agent7_probability(self) -> str:
+        result = self.results.get("extracurricular", {})
+        return str(result.get("P(Strong)", "Not scored")) if isinstance(result, dict) else "Not scored"
+
+    @rx.var
+    def agent7_archetype(self) -> str:
+        result = self.results.get("extracurricular", {})
+        return str(result.get("achievement_archetype", "Not scored")) if isinstance(result, dict) else "Not scored"
+
+    @rx.var
+    def agent7_research_evidence(self) -> str:
+        result = self.results.get("extracurricular", {})
+        return "Yes" if isinstance(result, dict) and result.get("has_research_evidence") else "No"
 
     @rx.var
     def agents_done(self) -> bool:
@@ -526,6 +581,7 @@ class State(rx.State):
             f"{p.get('university')} | {p.get('program_name')} | fit {float(p.get('match_score', 0)):.3f} | {p.get('duration', 'Not specified')}"
             for p in results.get('program', {}).get('programs', [])
         ]
+        lines += [agent7_report_text(results)]
         lines += results.get('_errors', [])
         story = []
         for line in lines:

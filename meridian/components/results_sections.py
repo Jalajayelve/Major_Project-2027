@@ -119,6 +119,41 @@ def extracurricular():
     )
 
 
+def live_extracurricular():
+    return rx.el.div(
+        rx.el.div(
+            count_num(State.agent7_score, tag="span", style={"fontSize": "64px"}),
+            rx.el.span("of 100", class_name="mono"),
+            class_name="row",
+            style={"gap": "14px", "alignItems": "baseline", "marginBottom": "24px"},
+        ),
+        rx.el.div(
+            rx.el.span("Strength tier", style={"fontWeight": 500}),
+            rx.el.span(State.agent7_tier, class_name="num-key"),
+            class_name="row between",
+            style={"marginBottom": "12px"},
+        ),
+        rx.el.div(
+            rx.el.span("P(Strong)", style={"fontWeight": 500}),
+            rx.el.span(State.agent7_probability, class_name="mono ink"),
+            class_name="row between",
+            style={"marginBottom": "12px"},
+        ),
+        rx.el.div(
+            rx.el.span("Achievement archetype", style={"fontWeight": 500}),
+            rx.el.span("Cluster ", State.agent7_archetype, class_name="mono ink"),
+            class_name="row between",
+            style={"marginBottom": "12px"},
+        ),
+        rx.el.p(
+            "Research evidence reported: ",
+            State.agent7_research_evidence,
+            ". P(Strong) is a synthetic strength-class probability, not an admission probability.",
+            class_name="notice",
+        ),
+    )
+
+
 def key_factors():
     rows = []
     for k in mock.KEY_FACTORS:

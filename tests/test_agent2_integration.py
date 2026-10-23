@@ -1,5 +1,4 @@
 """Application contracts and current-bundle failure tests; no model training."""
-import asyncio
 import copy
 import os
 from pathlib import Path
@@ -9,12 +8,9 @@ from unittest.mock import patch
 
 from meridian.data import mock
 from meridian.services.agent2 import (
-    Agent2Service, Agent2Unavailable, ARTIFACT_NAMES, NOTICE, MODEL_DIR,
+    Agent2Service, Agent2Unavailable, ARTIFACT_NAMES, NOTICE,
     candidate_from_profile, require_bundle, validate_result,
 )
-from meridian.services.agent7 import candidate_from_profile as agent7_candidate
-from meridian.services.report_pdf import render_report_pdf
-from meridian.state import State
 
 PROFILE = {**mock.STUDENT_PROFILE, "leadership_score": "6", "research_score": "9",
            "competition_score": "5", "volunteering_score": "4", "publication_count": "3",
@@ -29,44 +25,6 @@ RESULT = {"notice": NOTICE, "retrieval": "TF-IDF", "universities": [{
     "tier_score": 70., "tier": "Middle", "evidence_reason": "", "tuition": None, "tuition_str": "Not listed",
     "factors": [{"feature": "gpa_numeric", "impact": .05}],
 }]}
-
-
-class BackgroundHarness:
-    """Exercise the real event body with an in-memory state and no server locks."""
-    def __init__(self, state):
-        object.__setattr__(self, "state", state)
-
-    def __getattr__(self, key):
-        return getattr(self.state, key)
-
-    def __setattr__(self, key, value):
-        setattr(self.state, key, value)
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *args):
-        return False
-
-
-class FastEvents:
-    def __init__(self, mutate=None):
-        self.mutate = mutate
-
-    async def stream(self, profile):
-        for agent in mock.AGENT_IDS:
-            # Even a mock completion for university must be ignored.
-            yield {"type": agent + "_completed", "agent": agent}
-        if self.mutate:
-            self.mutate()
-
-
-def fresh_state():
-    state = State(_reflex_internal_init=True)
-    state.profile = dict(PROFILE)
-    state.agent7_result = dict(AGENT7)
-    state.agent7_inputs = agent7_candidate(PROFILE)
-    return state
 
 
 class Agent2Tests(unittest.TestCase):
@@ -111,88 +69,41 @@ class Agent2Tests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_result(result)
 
-    def test_missing_agent2_preserves_agent7_and_allows_dossier(self):
-        state = fresh_state()
-        with patch("meridian.state.get_event_source", return_value=FastEvents()), patch(
-            "meridian.state.Agent2Service.match_profile", side_effect=Agent2Unavailable("Missing updated exports")
-        ):
-            asyncio.run(State.run_agents.fn(BackgroundHarness(state)))
-        self.assertEqual(state.agent7_result, AGENT7)
-        self.assertEqual(state.agent2_result, {})
-        self.assertIn("Missing updated exports", state.agent2_error)
-        self.assertTrue(state.agents_done)
-        self.assertEqual(next(a for a in state.agents if a["id"] == "university")["status"], "unavailable")
-        self.assertEqual(state.university_count, "Unavailable")
-        captured = self.capture_report(state)
-        self.assertEqual(captured["universities"], [])
-        self.assertEqual(captured["key_factors"], [])
-        self.assertIn("Missing updated exports", captured["agent2_notice"])
-
-    def test_unsupported_scores_and_old_results_cannot_leak_into_reports(self):
+    def test_insufficient_evidence_cannot_carry_probability(self):
         result = copy.deepcopy(RESULT)
-        row = result["universities"][0]
-        row.update(probability=None, prob_str="Insufficient evidence", tier="Insufficient evidence",
-                   evidence_reason="GRE Quant is missing", factors=[])
+        row = result['universities'][0]
+        row.update(probability=None, prob_str='Insufficient evidence', tier='Insufficient evidence',
+                   evidence_reason='GRE Quant is missing', factors=[])
         validate_result(result)
-        state = fresh_state()
-        state.agent2_result = result
-        report = self.capture_report(state)
-        self.assertIsNone(report["universities"][0]["probability"])
-        self.assertEqual(report["key_factors"], [])
-        row["probability"] = .98
+        row['probability'] = .98
         with self.assertRaises(ValueError):
             validate_result(result)
-        old = copy.deepcopy(RESULT)
-        old["universities"][0]["tier"] = "Target"
-        state.agent2_result = old
-        self.assertFalse(state.agent2_ready)
-        self.assertEqual(self.capture_report(state)["universities"], [])
-
-    def test_result_rendering_pdf_and_invalidation_share_session_data(self):
-        state = fresh_state()
-        with patch("meridian.state.get_event_source", return_value=FastEvents()), patch(
-            "meridian.state.Agent2Service.match_profile", return_value=copy.deepcopy(RESULT)
-        ) as service:
-            asyncio.run(State.run_agents.fn(BackgroundHarness(state)))
-            service.assert_called_once_with(PROFILE, AGENT7)
-        self.assertEqual(state.university_matches, RESULT["universities"])
-        self.assertEqual(state.university_count, "1")
-        captured = self.capture_report(state)
-        self.assertEqual(captured["universities"], state.university_matches)
-        self.assertIn("gpa_numeric", captured["key_factors"][0]["name"])
-        state.set_field("gpa", "8")
-        self.assertFalse(state.agent2_ready)
-        self.assertEqual(state.agent2_profile, {})
-        self.assertEqual(state.agent7_result, {})
-
-    def test_profile_edit_during_analysis_cannot_publish_old_results(self):
-        state = fresh_state()
-        with patch("meridian.state.get_event_source", return_value=FastEvents(lambda: state.set_field("gpa", "8"))), patch(
-            "meridian.state.Agent2Service.match_profile", return_value=copy.deepcopy(RESULT)
-        ):
-            asyncio.run(State.run_agents.fn(BackgroundHarness(state)))
-        self.assertFalse(state.agent2_ready)
-        self.assertFalse(state.agent7_ready)
-        self.assertFalse(state.agents_done)
-        self.assertIn("Profile changed", state.agent7_error)
-
-    def capture_report(self, state):
-        captured = {}
-        test = self
-        class Capture:
-            def get_report(self, profile):
-                return mock.build_report(profile)
-            def render_pdf(self, report):
-                captured.update(report)
-                pdf = render_report_pdf(report)
-                test.assertTrue(pdf.startswith(b"%PDF"))
-                return pdf
-        before = copy.deepcopy(mock.UNIVERSITIES)
-        with patch("meridian.state.get_report_service", return_value=Capture()):
-            state.download_report()
-        self.assertEqual(mock.UNIVERSITIES, before)
-        return captured
 
 
-if __name__ == "__main__":
-    unittest.main()
+# Current authenticated workflow regressions replace the retired demo-state API.
+from test_agent7_integration import state, other_agents, run
+from meridian.services import api, storage
+import json
+
+
+def test_matching_failure_keeps_real_agent7_result(state, monkeypatch):
+    async def response(path, payload):
+        if path == '/agent1/profile':
+            return {'prediction': 'Contract fixture'}
+        raise ValueError('Matcher unavailable')
+    monkeypatch.setattr(api, 'request', response)
+    run(state)
+    assert 'extracurricular' in state.results
+    assert state.agents[1]['status'] == 'failed'
+    assert state.agents[2]['status'] == 'failed'
+    assert json.loads(storage.user(state.session)['results'])['extracurricular'] == state.results['extracurricular']
+
+
+def test_matching_payload_and_agent3_shortlist_unchanged(state, other_agents):
+    run(state)
+    assert other_agents[1] == ('/match', {'gpa': 3.4, 'country': 'USA', 'tier': 'medium'})
+    assert other_agents[2][1]['matched_universities'] == state.results['university']['matched_universities']
+    state.set_field('gpa', '3.8')
+    state._save_profile()
+    assert state.results == {}
+    assert json.loads(storage.user(state.session)['results']) == {}

@@ -1,0 +1,7 @@
+[
+  {"degree_level":"Bachelors","field":"Arts","leadership_score":0,"research_score":0,"competition_score":0,"volunteering_score":0,"publication_count":0,"patent_count":0},
+  {"degree_level":"Bachelors","field":"Business","leadership_score":8,"research_score":1,"competition_score":7,"volunteering_score":5,"publication_count":0,"patent_count":0},
+  {"degree_level":"Masters","field":"STEM","leadership_score":6,"research_score":9,"competition_score":5,"volunteering_score":4,"publication_count":3,"patent_count":0},
+  {"degree_level":"PhD-applicant","field":"SocialSci","leadership_score":8,"research_score":10,"competition_score":8,"volunteering_score":7,"publication_count":5,"patent_count":1},
+  {"degree_level":"Masters","field":"Other","leadership_score":4,"research_score":5,"competition_score":3,"volunteering_score":8,"publication_count":1,"patent_count":0}
+]

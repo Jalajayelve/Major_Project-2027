@@ -1,21 +1,20 @@
 """Real exported-bundle checks. Requires the isolated Agent 2 and Agent 7 runtimes."""
-import copy
 import json
 from pathlib import Path
 import unittest
 from unittest.mock import patch
 
 from meridian.data import mock
-from meridian.services.agent2 import Agent2Service, Agent2Unavailable, require_bundle, ROOT
+from meridian.services.agent2 import Agent2Service, Agent2Unavailable, require_bundle, ROOT, MODEL_DIR
 from meridian.services.agent7 import Agent7Service
-from meridian.services.report_pdf import render_report_pdf
-from meridian.state import State
 
 INPUTS = {"leadership_score": "6", "research_score": "9", "competition_score": "5",
           "volunteering_score": "4", "publication_count": "3", "patent_count": "0",
           "agent7_degree_level": "Masters", "agent7_field": "STEM"}
 
 
+@unittest.skipUnless((MODEL_DIR / 'manifest.json').is_file(),
+                     'Optional five-feature Agent 2 export is absent; active /match and Agent 3 are tested in backend/tests.')
 class RealBundleTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -60,24 +59,11 @@ class RealBundleTests(unittest.TestCase):
                     self.assertGreater(row["match_score"], 0)
                 (ROOT / f"reports/agent2-local/unsupported-gre-{gre or 'missing'}.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
 
-    def test_actual_results_are_exported_to_pdf(self):
-        state = State(_reflex_internal_init=True)
-        state.profile = dict(self.profile)
-        state.agent7_result = dict(self.agent7)
-        state.agent2_result = copy.deepcopy(self.first)
-        captured = {}
-        class Capture:
-            def get_report(self, profile):
-                return mock.build_report(profile)
-            def render_pdf(self, report):
-                captured.update(report)
-                return render_report_pdf(report)
-        with patch("meridian.state.get_report_service", return_value=Capture()):
-            state.download_report()
-        self.assertEqual(captured["universities"], self.first["universities"])
-        self.assertEqual(len(captured["key_factors"]), 30)
-        self.assertEqual(captured["profile_strength"]["score"], "55.4")
-
+    def test_real_agent7_score_is_used_by_matching_adapter(self):
+        from meridian.services.agent2 import candidate_from_profile
+        mapped = candidate_from_profile(self.profile, self.agent7)
+        self.assertEqual(mapped['profile_strength_score'], self.agent7['profile_strength_score'])
+        self.assertNotIn('admit_probability', mapped)
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,591 @@
+{
+  "versions": {
+    "numpy": "2.3.3",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.8.0",
+    "joblib": "1.5.2"
+  },
+  "artifacts": [
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_archetype_scaler (2).joblib",
+      "sha256": "47aa217e4a5af6c50f2e589406a27c08405bd8364cb9f6945045b552cba5bd1d",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['leadership_score', 'research_score', 'competition_score', 'volunteering_score', 'publication_count', 'patent_count', 'has_research_evidence', 'degree_level_Bachelors', 'degree_level_Masters', 'degree_level_PhD-applicant', 'field_Arts', 'field_Business', 'field_Other', 'field_STEM', 'field_SocialSci', 'publication_log', 'patent_log', 'total_activity', 'achievement_mean', 'research_publication_interaction', 'research_patent_interaction', 'leadership_volunteering_interaction']"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_feature_columns (2).joblib",
+      "sha256": "ad4c8b1c4330d52a8ad199059ba0d1c0358eb16a7656bddaba5de964c42727c2",
+      "type": "sklearn.cluster._kmeans.KMeans",
+      "warnings": [],
+      "n_features_in_": 5
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_gbr_score_model (2).joblib",
+      "sha256": "ddcd332c51692b86d8af0c7345044bab5bd0db2a4affa7cf7eff06df3d8a32e4",
+      "error": "KeyError: 91",
+      "header": "b'[paths]\\r\\ntrain = null\\r\\ndev = null\\r\\nvectors = null\\r\\ninit_tok2vec = null\\r\\n\\r\\n[system]\\r\\nseed = 0\\r\\ngpu_al'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_keyword_anomaly_model (2).joblib",
+      "sha256": "2b952471452a428cf312505d4d40e5172f337cc70f4716bf15f1a54b1638c47b",
+      "error": "KeyError: 123",
+      "header": "b'{\\r\\n  \"lang\":\"en\",\\r\\n  \"name\":\"pipeline\",\\r\\n  \"version\":\"0.0.0\",\\r\\n  \"spacy_version\":\">=3.8.16,<3.9.0\",\\r'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_lr_tier_model (2).joblib",
+      "sha256": "113c55d357dd1387357a8db30f3c4587e640e0d4084a9dab9ff933f9d9fa6e5d",
+      "error": "KeyError: 123",
+      "header": "b'{\\r\\n  \"moves\":null,\\r\\n  \"update_with_oracle_cut_size\":100,\\r\\n  \"multitasks\":[\\r\\n\\r\\n  ],\\r\\n  \"min_action_fr'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_real_p90_thresholds (2).joblib",
+      "sha256": "a86fac3b5ea9eadab214e10754018749fdf9907cb90167772f6e4f4acfea8f87",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [],
+      "n_features_in_": 6,
+      "feature_names_in_": [
+        "leadership_score",
+        "research_score",
+        "competition_score",
+        "volunteering_score",
+        "publication_count",
+        "patent_count"
+      ]
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_real_p99_caps (2).joblib",
+      "sha256": "ddb4e0c173ab9e6dee62a43ab05157481e42fa6493109c590b0bb9fd698f8fd6",
+      "type": "sklearn.ensemble._iforest.IsolationForest",
+      "warnings": [],
+      "n_features_in_": 5
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_resume_archetype_kmeans (2).joblib",
+      "sha256": "049a0d0c2e4747db6ef788c15eb51a33bb7fdddcbc504a34c80c0840f42d7cd7",
+      "type": "sklearn.cluster._kmeans.KMeans",
+      "warnings": [],
+      "n_features_in_": 6
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_resume_archetype_scaler (2).joblib",
+      "sha256": "b014e8bba4958b120af2d0c1c63eabb7c00379f2bacaf10df7c5325efd2ea467",
+      "error": "IndexError: list index out of range",
+      "header": "b'\\x87\\xadprefix_search\\xda\\x0b\\x92^\\xc2\\xa7|^%|^=|^\\xe2\\x80\\x94|^\\xe2\\x80\\x93|^\\\\+(?![0-9])|^\\xe2\\x80\\xa6|^\\xe2\\x80\\xa6\\xe2\\x80\\xa6|^,|^:|^;|^\\\\!|^\\\\?|^\\xc2\\xbf|^\\xd8\\x9f|^\\xc2\\xa1|^\\\\(|^\\\\)'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_rf_tier_model (2).joblib",
+      "sha256": "502214df2b3e37a3ff033d7a2b55024b196a58cffa2dd094b3ee16a4bb419bb7",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [],
+      "n_features_in_": 5
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_scaler (2).joblib",
+      "sha256": "d7aa88fe0b5a9a77e19fcf36318baa30bd690479cf53f18b76dd3fb11865f156",
+      "type": "sklearn.ensemble._gb.GradientBoostingRegressor",
+      "warnings": [],
+      "n_features_in_": 22,
+      "feature_names_in_": [
+        "leadership_score",
+        "research_score",
+        "competition_score",
+        "volunteering_score",
+        "publication_count",
+        "patent_count",
+        "has_research_evidence",
+        "degree_level_Bachelors",
+        "degree_level_Masters",
+        "degree_level_PhD-applicant",
+        "field_Arts",
+        "field_Business",
+        "field_Other",
+        "field_STEM",
+        "field_SocialSci",
+        "publication_log",
+        "patent_log",
+        "total_activity",
+        "achievement_mean",
+        "research_publication_interaction",
+        "research_patent_interaction",
+        "leadership_volunteering_interaction"
+      ]
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/agent7_xgb_tier_model (2).joblib",
+      "sha256": "9306055d997a87ddffb547b832bf8b950dc3929bdf9a1e24dfc97039d19f3d11",
+      "type": "sklearn.linear_model._logistic.LogisticRegression",
+      "warnings": [],
+      "n_features_in_": 22,
+      "classes_": [
+        "Moderate",
+        "Strong",
+        "Weak"
+      ]
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/cfg (2)",
+      "sha256": "5ca432d5142d99500226cb799551e02041e688a90afdf9633fdc7ae6730063a5",
+      "error": "KeyError: 123",
+      "header": "b'{\\r\\n  \"mode\":\"default\"\\r\\n}'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/meta (2).json",
+      "sha256": "e302eed02de04ef2698c608977985319f8c793e59b013b0524f9f7ef1b6e9d6e",
+      "error": "ValueError: unregistered extension code 165",
+      "header": "b'\\x82\\xa5moves\\xda\\x03`{\"0\":{},\"1\":{\"ACTION\":-1,\"CERTIFICATION\":-2,\"COLLABORATION\":-3,\"COMPANY\":-4,\"DESIGNATION\":'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/model (2)",
+      "sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "error": "IndexError: index out of range",
+      "header": "b'\\x80'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/moves (2)",
+      "sha256": "083af5e9b95a0a678c16e08e44be6001f11a63f4a98cd50a92552e0cbd3abe62",
+      "error": "KeyError: 91",
+      "header": "b'[\\r\\n  \"\\\\t\",\\r\\n  \"\\\\t\\\\t\",\\r\\n  \"\\\\t\\\\t\\\\t\",\\r\\n  \"\\\\t\\\\t\\\\t\\\\t\",\\r\\n  \"\\\\t\\\\t\\\\t\\\\t\\\\t\",\\r\\n  \"\\\\t\\\\t\\\\t\\\\t\\\\t\\\\t\",\\r\\n  \"\\\\t\\\\t\\\\t\\\\t\\\\t'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/strings (2).json",
+      "sha256": "14772b683e726436d5948ad3fff2b43d036ef2ebbe3458aafed6004e05a40706",
+      "error": "IndexError: pop from empty list",
+      "header": "b\"\\x93NUMPY\\x01\\x00v\\x00{'descr': '<f4', 'fortran_order': False, 'shape': (0, 0), }                               \""
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/tokenizer (2)",
+      "sha256": "e2b0ec51ac80c1822ebc7d45678fcc09725810033369e6536833c73c02cdcabe",
+      "error": "ValueError: unregistered extension code 1685024421",
+      "header": "b'\\x84\\xa5nodes\\xdc\\x00A\\x84\\xa5index\\x00\\xa4name\\xacparser_model\\xa4dims\\x81\\xa2nI\\xc0\\xa4refs\\x83\\xa7tok2vec\\x01\\xa5lower\\x02\\xa5upper\\x03\\x84\\xa5index\\x01\\xa4name\\xda\\x01\\xb3extract_f'"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/vectors (2)",
+      "sha256": "97d9169f6f64ef64dc3dbceb180b0c43d41c44ce7757d2ce8677eb6c51de95a3",
+      "type": "builtins.dict",
+      "warnings": [],
+      "value": "{'leadership': np.float64(2.0), 'competition': np.float64(0.0), 'volunteer': np.float64(1.0), 'sports': np.float64(1.0), 'research': np.float64(1.0)}"
+    },
+    {
+      "path": "backend/app/agents/extracurricular_agent/trained_models_A7/vectors (2).cfg",
+      "sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "error": "IndexError: index out of range",
+      "header": "b'\\x80'"
+    },
+    {
+      "path": "backend/app/agents/profile_agent/trained_models_A1/feature_columns.joblib",
+      "sha256": "9b3a5ca236187b7c7d0cbee3947d468ea6ab16d7b0b1d829690b81fd109799df",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['gpa_normalized_4', 'gre_score', 'toefl_score', 'has_research', 'university_rating', 'admit_probability', 'gmat_score', 'work_experience_months', 'track_MBA', 'track_MS', 'admission_status_Admit', 'admission_status_Deny', 'admission_status_NA', 'admission_status_Waitlist', 'major_Business', 'major_Humanities', 'major_NA', 'major_STEM', 'work_industry_CPG', 'work_industry_Consulting', 'work_industry_Energy', 'work_industry_Financial Services', 'work_industry_Health Care', 'work_industry_Investment Banking', 'work_industry_Investment Management', 'work_industry_Media/Entertainment', 'work_industry_NA', 'work_industry_Nonprofit/Gov', 'work_industry_Other', 'work_industry_PE/VC', 'work_industry_Real Estate', 'work_industry_Retail', 'work_industry_Technology']"
+    },
+    {
+      "path": "backend/app/agents/profile_agent/trained_models_A1/lr_tier_model.joblib",
+      "sha256": "c8e16d60546493395e6bafd0b2a6b08dd7b8febb629a143c47bca83656839441",
+      "type": "sklearn.linear_model._logistic.LogisticRegression",
+      "warnings": [
+        "Trying to unpickle estimator LogisticRegression from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 33,
+      "classes_": [
+        0,
+        1
+      ]
+    },
+    {
+      "path": "backend/app/agents/profile_agent/trained_models_A1/rf_tier_model.joblib",
+      "sha256": "a467e03964c455d2c7e4afc6096401b7b4caf095b85fcf1a8f4562c06a90b011",
+      "type": "sklearn.ensemble._forest.RandomForestClassifier",
+      "warnings": [
+        "Trying to unpickle estimator DecisionTreeClassifier from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations",
+        "Trying to unpickle estimator RandomForestClassifier from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 33,
+      "feature_names_in_": [
+        "gpa_normalized_4",
+        "gre_score",
+        "toefl_score",
+        "has_research",
+        "university_rating",
+        "admit_probability",
+        "gmat_score",
+        "work_experience_months",
+        "track_MBA",
+        "track_MS",
+        "admission_status_Admit",
+        "admission_status_Deny",
+        "admission_status_NA",
+        "admission_status_Waitlist",
+        "major_Business",
+        "major_Humanities",
+        "major_NA",
+        "major_STEM",
+        "work_industry_CPG",
+        "work_industry_Consulting",
+        "work_industry_Energy",
+        "work_industry_Financial Services",
+        "work_industry_Health Care",
+        "work_industry_Investment Banking",
+        "work_industry_Investment Management",
+        "work_industry_Media/Entertainment",
+        "work_industry_NA",
+        "work_industry_Nonprofit/Gov",
+        "work_industry_Other",
+        "work_industry_PE/VC",
+        "work_industry_Real Estate",
+        "work_industry_Retail",
+        "work_industry_Technology"
+      ],
+      "classes_": [
+        0,
+        1
+      ]
+    },
+    {
+      "path": "backend/app/agents/profile_agent/trained_models_A1/scaler.joblib",
+      "sha256": "7690190b5bcedf8679bef9ccd7a728df22fc59622640a3da526a2cfa0ac8df58",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [
+        "Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 33,
+      "feature_names_in_": [
+        "gpa_normalized_4",
+        "gre_score",
+        "toefl_score",
+        "has_research",
+        "university_rating",
+        "admit_probability",
+        "gmat_score",
+        "work_experience_months",
+        "track_MBA",
+        "track_MS",
+        "admission_status_Admit",
+        "admission_status_Deny",
+        "admission_status_NA",
+        "admission_status_Waitlist",
+        "major_Business",
+        "major_Humanities",
+        "major_NA",
+        "major_STEM",
+        "work_industry_CPG",
+        "work_industry_Consulting",
+        "work_industry_Energy",
+        "work_industry_Financial Services",
+        "work_industry_Health Care",
+        "work_industry_Investment Banking",
+        "work_industry_Investment Management",
+        "work_industry_Media/Entertainment",
+        "work_industry_NA",
+        "work_industry_Nonprofit/Gov",
+        "work_industry_Other",
+        "work_industry_PE/VC",
+        "work_industry_Real Estate",
+        "work_industry_Retail",
+        "work_industry_Technology"
+      ]
+    },
+    {
+      "path": "backend/app/agents/profile_agent/trained_models_A1/xgb_tier_model.joblib",
+      "sha256": "7bdf30ba6cb73da302545549f0ebdd2d53868ead16d743b8d4640dc9270e89eb",
+      "type": "xgboost.sklearn.XGBClassifier",
+      "warnings": [
+        "[22:09:25] WARNING: C:\\actions-runner\\_work\\xgboost\\xgboost\\src\\data\\../common/error_msg.h:82: If you are loading a serialized model (like pickle in Python, RDS in R) or\nconfiguration generated by an older version of XGBoost, please export the model by calling\n`Booster.save_model` from that version first, then load it back in current version. See:\n\n    https://xgboost.readthedocs.io/en/stable/tutorials/saving_model.html\n\nfor more details about differences between saving model and serializing.\n"
+      ],
+      "n_features_in_": 33,
+      "feature_names_in_": [
+        "gpa_normalized_4",
+        "gre_score",
+        "toefl_score",
+        "has_research",
+        "university_rating",
+        "admit_probability",
+        "gmat_score",
+        "work_experience_months",
+        "track_MBA",
+        "track_MS",
+        "admission_status_Admit",
+        "admission_status_Deny",
+        "admission_status_NA",
+        "admission_status_Waitlist",
+        "major_Business",
+        "major_Humanities",
+        "major_NA",
+        "major_STEM",
+        "work_industry_CPG",
+        "work_industry_Consulting",
+        "work_industry_Energy",
+        "work_industry_Financial Services",
+        "work_industry_Health Care",
+        "work_industry_Investment Banking",
+        "work_industry_Investment Management",
+        "work_industry_Media/Entertainment",
+        "work_industry_NA",
+        "work_industry_Nonprofit/Gov",
+        "work_industry_Other",
+        "work_industry_PE/VC",
+        "work_industry_Real Estate",
+        "work_industry_Retail",
+        "work_industry_Technology"
+      ],
+      "classes_": [
+        0,
+        1
+      ]
+    },
+    {
+      "path": "backend/app/agents/program_agent/trained_models_A3/agent3_catalog_and_config.joblib",
+      "sha256": "6aaf15e61f05b18d3539e192f2588d84b5dcc4db74559b1ea932fd0c68728742",
+      "error": "NotImplementedError: (<StringDtype(storage='python', na_value=nan)>, array(['P002108', 'P002128', 'P002188', ..., 'P004697', 'P004657',\n       'P004637'], shape=(3052,), dtype=object))",
+      "header": "b\"x^\\xec\\xbd[\\x97#\\xd7y%(\\xea\\xd2\\xdd3\\xb6\\x97\\xdd-[\\xf2]\\xa1\\x8beJ\\xaa\\xa4\\x12\\t\\xe4M\\xb2.UYE\\xb2HV\\xb1TY$K\\xb6d\\x1a\\x05D\\x02\\xc1\\x02\\x10 .E'\\x97{\\xda\\xfd\\xe0\\xee\\xd6Z\\xf96\\xa9\\x97Y\\xf3<\\xff\\xa5\\xffC\\xff\\x84~\\x99\\xb7y\\xeb\\xd9'\\xe2|\\x1b\\x11@\\xdc\\x91\\x8980\\x0es-\\t\""
+    },
+    {
+      "path": "backend/app/agents/program_agent/trained_models_A3/agent3_ranker_v2.joblib",
+      "sha256": "1d9f0f6ddba5648270739398b09a027a9e5b03148e3b823d1430fc17753f4940",
+      "error": "ModuleNotFoundError: No module named 'agent3'",
+      "header": "b\"x^\\xec\\xbdK\\x97#\\xc9y%\\xc8\\xa7\\xbag$\\x8d\\xba\\x9b\\x12\\xa9'\\xe9|\\x88*\\x92\\x19\\xc5\\x88\\x00\\xe2\\xc5wfdVUVUf%3\\xb2\\xaa\\x92\\x12\\xa9\\x12\\x12\\xf0\\x00\\xbc\\x12\\x80\\x83\\x80#KQG=\\xad^\\xa8\\xbbyN\\xccj\\x82\\x8b\\xe93\\xeb\\xf9\\x0f\\xf3\\x13z\\xdd\\xdb^\\xcc9\\xb3\\x9d\\xcd\\xecf\\xd7s\\xcd\\xdd\\xbe\\x0bw\\xc0\\xdf\\x88\\x80\""
+    },
+    {
+      "path": "backend/app/agents/program_agent/trained_models_A3/agent3_tfidf_fields.joblib",
+      "sha256": "bee2540862a41134bcf3751a0ec296bfbc1559e58d1e9fd09af7941c15326b57",
+      "type": "builtins.dict",
+      "warnings": [
+        "Trying to unpickle estimator TfidfTransformer from version 1.9.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations",
+        "Trying to unpickle estimator TfidfVectorizer from version 1.9.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "value": "{'specialization': (TfidfVectorizer(ngram_range=(1, 2), strip_accents='unicode', sublinear_tf=True), <Compressed Sparse Row sparse matrix of dtype 'float64'\n\twith 6934 stored elements and shape (3052, 150)>, TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 5), strip_accents='unicode',\n                sublinear_tf=True), <Compressed Sparse Row sparse matrix of dtype 'float64'\n\twith 114923 stored elements and shape (3052, 1600)>), 'title': (TfidfVectorizer(ngram_range=(1, 2), strip_accents='unicode', sublinear_tf=True), <Compressed Sparse Row sparse matrix of dtype 'float64'\n\twith 21279 stored elements and shape (3052, 240)>, TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 5), strip_accents='unicode',\n                sublinear_tf=True), <Compressed Sparse Row sparse matrix of dtype 'float64'\n\twith 217650 stored elements and shape (3052, 1613)>), 'content': (TfidfVectorizer(ngram_range=(1, 2), strip_accents='unicode', sublinear_tf=True), <Compressed Sparse Row sparse matrix of dtype 'float64'\n\twith 76875 stored elements and shape (3052, 1138)>, TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 5), strip_accents='unicode',\n                sublinear_tf=True), <Compressed Sparse Row sparse matrix of dtype 'float64'\n\twith 710309 stored elements and shape (3052, 2177)>)}"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/agent2_agent1_tier_features.joblib",
+      "sha256": "ec575b1fbbe5e8c7c4f716a402a1f0e35245bfc3ca09e3e71fc1e9d9ffe2a409",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['tier_score']"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/agent2_agent1_tier_representation.joblib",
+      "sha256": "e787d348f06425e1b9a91361d22f1e8f4d1276da6fc9a0eee8b8d28d3942a2ce",
+      "type": "builtins.dict",
+      "warnings": [],
+      "value": "{'column': 'tier_score', 'dtype': 'float', 'valid_range': (59.79, 91.5), 'source': 'agent2_training.csv (pre-merged with agent2_enhanced_program_catalog.csv)'}"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/agent2_decision_threshold.joblib",
+      "sha256": "aa0b9b655118d2d6f5ee729d9cc5355f9ca6c235e72a6b4524f0f77457f456bd",
+      "type": "numpy.float64",
+      "warnings": [],
+      "value": "0.44000000000000006"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/agent2_feature_columns.joblib",
+      "sha256": "9e0ef854b774a6a9bdf9cd58928c2498085a9e84a6a345c1227f0e20814d2b99",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['tier_score', 'gpa_numeric', 'gre_numeric', 'gre_missing', 'applicant_cluster']"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/applicant_cluster_model.joblib",
+      "sha256": "e6508d547215926e42a745b6eb7f56183d7980a86df2018b7c586ec23a0c3007",
+      "type": "sklearn.cluster._kmeans.KMeans",
+      "warnings": [
+        "Trying to unpickle estimator KMeans from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 2
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/applicant_cluster_scaler.joblib",
+      "sha256": "e629394ebfed996d625c39aef20a79430d6e7968315ad281e000f3659c0b959d",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [
+        "Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 2,
+      "feature_names_in_": [
+        "gpa_numeric",
+        "gre_numeric"
+      ]
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/university_cluster_features.joblib",
+      "sha256": "d6eb19bbbf73cbd04e97a87eb9697e23a216b1f111989f7f684e7ed955021dc0",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['us_news_ranking', 'world_ranking', 'tuition_out_state_usd', 'program_admit_rate', 'university_admission_rate', 'tier_score', 'min_gpa', 'min_gre_quant', 'student_size']"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/university_cluster_medians.joblib",
+      "sha256": "78183f25d4c02ba6aeeb2a8176138d2fc2992cdf9f7fd5bddf2f469efe28aee2",
+      "type": "builtins.dict",
+      "warnings": [],
+      "value": "{'us_news_ranking': 32.0, 'world_ranking': 73.0, 'tuition_out_state_usd': 49922.0, 'program_admit_rate': 0.4267738883632922, 'university_admission_rate': 0.4008, 'tier_score': 74.23, 'min_gpa': 3.364301482182277, 'min_gre_quant': 156.38442131819616, 'student_size': 20443.0}"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/university_cluster_model.joblib",
+      "sha256": "5d4e8faa50d7d74820314acc12628459c1b1ef932a4babe6dff86346c2d5d703",
+      "type": "sklearn.cluster._kmeans.KMeans",
+      "warnings": [
+        "Trying to unpickle estimator KMeans from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 9
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained models/university_cluster_scaler.joblib",
+      "sha256": "d90b6a3dd05de38a96606c35671ae51b576145ca0754de2821dd69a27982f728",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [
+        "Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 9,
+      "feature_names_in_": [
+        "us_news_ranking",
+        "world_ranking",
+        "tuition_out_state_usd",
+        "program_admit_rate",
+        "university_admission_rate",
+        "tier_score",
+        "min_gpa",
+        "min_gre_quant",
+        "student_size"
+      ]
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/agent2_admission_model.joblib",
+      "sha256": "ec2349b8e0c273ec0790e8a01713da652d048d1df406f47b365ff9c99925e6d8",
+      "type": "sklearn.calibration.CalibratedClassifierCV",
+      "warnings": [
+        "Trying to unpickle estimator CalibratedClassifierCV from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations",
+        "Trying to unpickle estimator DecisionTreeClassifier from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations",
+        "Trying to unpickle estimator RandomForestClassifier from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations",
+        "Trying to unpickle estimator _SigmoidCalibration from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 19,
+      "feature_names_in_": [
+        "tier_score",
+        "gpa_numeric",
+        "gre_numeric",
+        "gre_missing",
+        "min_gpa",
+        "min_gre_quant",
+        "program_admit_rate",
+        "university_admission_rate",
+        "gpa_gap",
+        "gre_gap",
+        "gpa_ratio",
+        "gre_ratio",
+        "gpa_x_tier",
+        "academic_strength_score",
+        "selectivity_gap",
+        "ranking_gap",
+        "applicant_vs_difficulty",
+        "applicant_cluster",
+        "program_cluster"
+      ],
+      "classes_": [
+        0,
+        1
+      ]
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/agent2_agent1_tier_features.joblib",
+      "sha256": "ec575b1fbbe5e8c7c4f716a402a1f0e35245bfc3ca09e3e71fc1e9d9ffe2a409",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['tier_score']"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/agent2_agent1_tier_representation.joblib",
+      "sha256": "02c202504fe017e49301a0990b7f72cf78f6b7c99886ebd5375e001b0f8fcec7",
+      "type": "builtins.dict",
+      "warnings": [],
+      "value": "{'column': 'tier_score', 'dtype': 'float', 'valid_range': (59.79, 91.5), 'source': \"agent2_final_2tier.csv (Agent 1's university/program tier output)\"}"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/agent2_decision_threshold.joblib",
+      "sha256": "c61f53eab96317e40a8915dcde2608691c57c0067f3c814515505a64bc00a21f",
+      "type": "numpy.float64",
+      "warnings": [],
+      "value": "0.38000000000000006"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/agent2_feature_columns.joblib",
+      "sha256": "4d145c50d1c6c00c0637ba32fc1d08a2d493755674e688f01660b386fadef11f",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['tier_score', 'gpa_numeric', 'gre_numeric', 'gre_missing', 'min_gpa', 'min_gre_quant', 'program_admit_rate', 'university_admission_rate', 'gpa_gap', 'gre_gap', 'gpa_ratio', 'gre_ratio', 'gpa_x_tier', 'academic_strength_score', 'selectivity_gap', 'ranking_gap', 'applicant_vs_difficulty', 'applicant_cluster', 'program_cluster']"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/agent2_shap_explainer.joblib",
+      "sha256": "ff9045aa5f1db60bb65ee9321eb8e4f650223095ea7046be077872f41144f3ce",
+      "type": "shap.explainers._permutation.PermutationExplainer",
+      "warnings": [
+        "Trying to unpickle estimator DecisionTreeClassifier from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations",
+        "Trying to unpickle estimator RandomForestClassifier from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ]
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/applicant_cluster_model.joblib",
+      "sha256": "faf1143371f2b9d028706b166f57d1f89133777c27c740b21632816169cf8f80",
+      "type": "sklearn.cluster._kmeans.KMeans",
+      "warnings": [
+        "Trying to unpickle estimator KMeans from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 2
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/applicant_cluster_scaler.joblib",
+      "sha256": "56b203b5fb99754efd558873156f18c35c0542e1364f039e592ef936046fa5e8",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [
+        "Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 2,
+      "feature_names_in_": [
+        "gpa_numeric",
+        "gre_numeric"
+      ]
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_features.joblib",
+      "sha256": "d6eb19bbbf73cbd04e97a87eb9697e23a216b1f111989f7f684e7ed955021dc0",
+      "type": "builtins.list",
+      "warnings": [],
+      "value": "['us_news_ranking', 'world_ranking', 'tuition_out_state_usd', 'program_admit_rate', 'university_admission_rate', 'tier_score', 'min_gpa', 'min_gre_quant', 'student_size']"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_medians.joblib",
+      "sha256": "f03763a44bac324b898d936d37a35eb8fbc45b203517a37949249c93228f8361",
+      "type": "builtins.dict",
+      "warnings": [],
+      "value": "{'us_news_ranking': 32.0, 'world_ranking': 73.0, 'tuition_out_state_usd': 47420.0, 'program_admit_rate': 0.332, 'university_admission_rate': 0.4091, 'tier_score': 74.21, 'min_gpa': 3.0, 'min_gre_quant': 156.0, 'student_size': 22057.0}"
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_model.joblib",
+      "sha256": "b1095a718e6715383137ab5e0427f8e778b48978d5f3e89e46df0b0f92819ef5",
+      "type": "sklearn.cluster._kmeans.KMeans",
+      "warnings": [
+        "Trying to unpickle estimator KMeans from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 9
+    },
+    {
+      "path": "backend/app/agents/university_matching_agent/trained_models_A2/university_cluster_scaler.joblib",
+      "sha256": "b82e97f140e9b6d06657d471819924de38c912c1a98303e8c625c7959cc16e0e",
+      "type": "sklearn.preprocessing._data.StandardScaler",
+      "warnings": [
+        "Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.8.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:\nhttps://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations"
+      ],
+      "n_features_in_": 9,
+      "feature_names_in_": [
+        "us_news_ranking",
+        "world_ranking",
+        "tuition_out_state_usd",
+        "program_admit_rate",
+        "university_admission_rate",
+        "tier_score",
+        "min_gpa",
+        "min_gre_quant",
+        "student_size"
+      ]
+    }
+  ]
+}

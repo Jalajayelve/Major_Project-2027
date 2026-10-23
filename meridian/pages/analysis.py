@@ -115,10 +115,10 @@ def analysis_page():
                         rx.el.h1("Your dossier, under review", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
                         rx.el.div(
                             rx.el.span(State.overall_pct, class_name="num-key", style={"fontSize": "44px"}),
-                            rx.el.span(State.agents_completed_count.to_string() + " of 3 API requests completed", class_name="mono on-navy"),
+                            rx.el.span(State.agents_completed_count.to_string() + " of 4 analyses completed", class_name="mono on-navy"),
                             class_name="row", style={"gap": "16px", "marginTop": "28px", "alignItems": "baseline"},
                         ),
-                        rx.el.p("Four agents are not exposed through an operational API. No simulated progress is shown.", class_name="body on-navy"),
+                        rx.el.p("Agents 1, 2, 3 and 7 run real analysis. Financial, scholarship and career agents remain unavailable.", class_name="body on-navy"),
                         rx.cond(
                             State.analysis_error != "",
                             rx.el.p(State.analysis_error, class_name="notice", role="alert", style={"marginTop": "20px"}),
@@ -206,6 +206,7 @@ def analysis_page():
                         ),
                         rx.fragment(),
                     ),
+                    rx.el.section(rx.el.h2("Extracurricular analysis", class_name="h2"), rx.el.p(State.agent7_summary, class_name="body"), style={"marginTop": "32px"}),
                     rx.el.div(rx.foreach(State.agents, _agent), class_name="route", style={"maxWidth": "860px", "marginTop": "36px"}),
                     rx.el.div(
                         rx.el.div(

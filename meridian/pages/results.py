@@ -99,7 +99,12 @@ def original_demo_layout():
                     _sheet("05", "Financial estimate", "What it will cost", R.financial()),
                     _sheet("06", "Scholarships", "Funding you may qualify for", R.scholarships()),
                     _sheet("07", "Career alignment", "Where this degree can lead", R.career()),
-                    _sheet("08", "Extracurricular strength", "Beyond grades and scores", R.extracurricular()),
+                    _sheet(
+                        "08",
+                        "Extracurricular strength",
+                        "Beyond grades and scores",
+                        rx.cond(State.agent7_available, R.live_extracurricular(), R.extracurricular()),
+                    ),
                     _sheet("09", "Key factors", "Why the model said what it said", R.key_factors()),
                     rx.el.div(
                         rx.el.div(rx.el.h2("Take your dossier with you", class_name="h2"), rx.el.p("A finished PDF with every section above.", class_name="body", style={"marginTop": "8px"})),
@@ -151,6 +156,7 @@ def results_page():
             ),
             rx.el.p("No Agent 3 program rankings were saved.", class_name="lede"),
         )),
-        rx.el.section(label("Additional chapters"), rx.el.h2("Still to come", class_name="h2"), rx.el.p("Financial, scholarship, career and extracurricular analysis are unavailable through the current API. No scores or estimates have been generated for those sections.", class_name="body"), class_name="sheet sheet-pad"),
+        _sheet("04", "Extracurricular strength", "Beyond grades and scores", rx.el.p(State.agent7_summary, class_name="body")),
+        rx.el.section(label("Additional chapters"), rx.el.h2("Still to come", class_name="h2"), rx.el.p("Financial, scholarship and career analysis are unavailable through the current API. No scores or estimates have been generated for those sections.", class_name="body"), class_name="sheet sheet-pad"),
         rx.el.details(rx.el.summary("Inspect the actual API response"), rx.el.pre(State.result_json, style={"whiteSpace":"pre-wrap","overflowWrap":"anywhere"}), class_name="sheet sheet-pad"),
         class_name="container", style={"padding":"48px 28px 96px","display":"grid","gap":"28px"}))

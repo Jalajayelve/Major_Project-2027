@@ -26,6 +26,7 @@
 .region-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 .region-chips button { border:1px solid var(--rule); padding:7px 12px; border-radius:20px; background:var(--paper); }
 .result-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.split > * { min-width:0; }
 button:disabled { opacity:.55; cursor:not-allowed; }
 :focus-visible { outline:3px solid var(--accent-deep); outline-offset:4px; }
 .request-busy { animation:request-pulse 1.4s ease-in-out infinite; }

@@ -4,6 +4,17 @@ import pycountry
 from .mock import FORM_SCHEMA as ORIGINAL, _F
 
 FORM_SCHEMA = deepcopy(ORIGINAL)
+FORM_SCHEMA[3]['fields'].extend([
+    _F(key, label + ' (0-10; documented score)') for key, label in (
+        ('leadership_score', 'Leadership'), ('research_score', 'Research'),
+        ('competition_score', 'Competition'), ('volunteering_score', 'Volunteering'))
+])
+FORM_SCHEMA[3]['fields'].extend([
+    _F('publication_count', 'Publication count (known whole number)'),
+    _F('patent_count', 'Patent count (known whole number)'),
+    _F('agent7_degree_level', 'Agent 7 degree category', 'select', options=['Bachelors', 'Masters', 'PhD-applicant']),
+    _F('agent7_field', 'Agent 7 field category', 'select', options=['STEM', 'Business', 'SocialSci', 'Arts', 'Other']),
+])
 FORM_SCHEMA[0]['fields'].extend([
     _F('phone_code', 'Calling code', 'select', options=['+1', '+44', '+91', '+61', '+49', '+33', '+86', '+81', '+65', '+971']),
     _F('country', 'Country of residence'),

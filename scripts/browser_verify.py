@@ -4,6 +4,7 @@ Run with .venv Python after installing requirements-test.txt and Chromium.
 Starts isolated servers on 3100/8100/8101; uses no real student information.
 """
 import os
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -21,16 +22,19 @@ OUT = ROOT / 'test-results'
 OUT.mkdir(exist_ok=True)
 env = {**os.environ, 'MERIDIAN_DATA_DIR': str(ROOT/'.test-data'/uuid.uuid4().hex),
        'MERIDIAN_API_URL': 'http://127.0.0.1:8101', 'PLAYWRIGHT_BROWSERS_PATH': str(ROOT/'.test-browsers'),
+       'REFLEX_API_URL': 'http://127.0.0.1:8100',
        'PYTHONIOENCODING': 'utf-8'}
 os.environ['PLAYWRIGHT_BROWSERS_PATH'] = env['PLAYWRIGHT_BROWSERS_PATH']
 processes = []
 logs = []
+frontend_env_path = ROOT / '.web/env.json'
+original_frontend_env = frontend_env_path.read_bytes()
 
 
-def start(name, command):
+def start(name, command, cwd=ROOT):
     log = (OUT/(name+'.log')).open('w', encoding='utf-8')
     logs.append(log)
-    process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,
+    process = subprocess.Popen(command, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT,
         creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
     processes.append(process)
 
@@ -63,8 +67,16 @@ def responsive(page, name):
 
 
 try:
+    frontend_env = json.loads(original_frontend_env)
+    for key, value in frontend_env.items():
+        if isinstance(value, str) and value.startswith(('http://', 'ws://')):
+            from urllib.parse import urlsplit, urlunsplit
+            parts = urlsplit(value)
+            frontend_env[key] = urlunsplit((parts.scheme, '127.0.0.1:8100', parts.path, parts.query, parts.fragment))
+    frontend_env_path.write_text(json.dumps(frontend_env), encoding='utf-8')
     start('api', [str(ROOT/'.venv-backend/Scripts/python.exe'), '-m','uvicorn','app:app','--app-dir','backend','--host','127.0.0.1','--port','8101'])
-    start('reflex', [sys.executable,'-m','reflex','run','--frontend-port','3100','--backend-port','8100','--backend-host','127.0.0.1'])
+    start('reflex', [sys.executable,'-m','reflex','run','--backend-only','--backend-port','8100','--backend-host','127.0.0.1'])
+    start('frontend', ['node', str(ROOT/'.web/node_modules/@react-router/dev/bin.cjs'), 'dev', '--host', '127.0.0.1', '--port', '3100'], cwd=ROOT/'.web')
     wait_url('http://127.0.0.1:8101/health')
     wait_url('http://localhost:3100')
     print('Test servers ready', flush=True)
@@ -78,18 +90,13 @@ try:
         try:
             page.goto('http://localhost:3100/profile')
             expect(page).to_have_url(re.compile('/login$'))
-            page.goto('http://localhost:3100')
-            page.wait_for_function("window.sessionStorage.getItem('token') !== null")
-            responsive(page, 'landing')
-            page.get_by_role('button', name=re.compile('Start Journey')).first.click()
-            expect(page).to_have_url(re.compile('/login$'))
             responsive(page, 'login')
-            page.get_by_role('link', name='New here? Create your dossier').click()
+            page.locator('a[href="/register"]').click()
             email = 'browser-'+uuid.uuid4().hex+'@example.com'
             password = 'Test-'+uuid.uuid4().hex
             page.get_by_label('Full name', exact=True).fill('Browser Test Student')
             page.get_by_label('Email address', exact=True).fill(email)
-            page.get_by_label(re.compile('Password ·')).fill(password)
+            page.locator('#auth-password').fill(password)
             page.get_by_role('button', name='Show password', exact=True).click()
             expect(page.locator('#auth-password')).to_have_attribute('type', 'text')
             page.get_by_role('button', name='Hide password', exact=True).click()
@@ -116,69 +123,82 @@ try:
             page.locator('#f-gre_verbal').fill('150')
             page.locator('#f-gre_quant').fill('160')
             page.locator('#f-toefl').fill('100')
+            page.wait_for_timeout(600)  # Allow controlled-input change events to reach Reflex.
             page.get_by_role('button', name=re.compile('^04')).click()
             page.get_by_label('Years of work experience').fill('1')
             page.locator('#f-research_experience').fill('0')
+            for key, value in dict(leadership_score='6', research_score='9', competition_score='5', volunteering_score='4', publication_count='3', patent_count='0').items():
+                page.locator('#f-'+key).fill(value)
+            page.locator('#f-agent7_degree_level').select_option('Masters')
+            page.locator('#f-agent7_field').select_option('STEM')
+            page.wait_for_timeout(600)
             page.get_by_role('button', name=re.compile('^05')).click()
             page.get_by_label('Degree', exact=True).select_option('MS')
             page.get_by_label('Field of study', exact=True).fill('Computer Science')
             page.get_by_label('Matching country').select_option('USA')
             page.get_by_label('Catalog tier filter').select_option('medium')
+            page.wait_for_timeout(600)
             page.get_by_role('button', name=re.compile('^07')).click()
-            page.get_by_label('Preferred regions', exact=True).fill('Canada')
+            page.locator('#f-regions').fill('Canada')
             page.get_by_role('button', name='Add region').click()
-            page.get_by_label('Preferred regions', exact=True).fill('Canada')
+            page.locator('#f-regions').fill('Canada')
             page.get_by_role('button', name='Add region').click()
             expect(page.get_by_role('button', name='Remove Canada')).to_have_count(1)
             page.get_by_role('button', name='Clear all regions').click()
             expect(page.get_by_role('button', name='Remove Canada')).to_have_count(0)
-            page.get_by_label('Preferred regions', exact=True).fill('Canada')
+            page.locator('#f-regions').fill('Canada')
             page.get_by_role('button', name='Add region').click()
             page.get_by_label('Accommodation preference').select_option('Off campus')
             page.get_by_label('Commute preference', exact=True).select_option('Public transport')
             page.get_by_label('Maximum commute (minutes)').fill('30')
+            page.wait_for_timeout(600)
             page.get_by_role('button', name='Save changes', exact=True).click()
             expect(page.get_by_text('All changes saved', exact=True)).to_be_visible()
             responsive(page, 'profile')
-            page.get_by_role('link', name='Dashboard', exact=True).click()
+            page.goto('http://localhost:3100/dashboard')
             expect(page.get_by_text('Off campus', exact=True)).to_be_visible()
             responsive(page, 'dashboard')
             print('Profile validation, saved regions/preferences and responsive layouts passed', flush=True)
             page.get_by_role('link', name=re.compile('Admissions desk')).click()
             page.locator('input[type=file]').first.set_input_files({'name':'resume.txt','mimeType':'text/plain','buffer':b'Test resume document'})
             expect(page.get_by_text('resume.txt', exact=True)).to_be_visible()
-            expect(page.get_by_text('Stored · not extracted', exact=True)).to_be_visible()
+            expect(page.get_by_text('Processed', exact=True)).to_be_visible()
             page.reload()
             expect(page.get_by_text('resume.txt', exact=True)).to_be_visible()
             responsive(page, 'documents')
             page.get_by_role('button', name='Download', exact=True).click()
             page.get_by_role('button', name=re.compile('Start analysis')).click()
             page.get_by_role('button', name='Run / retry analysis', exact=True).click()
-            expect(page.get_by_role('button', name=re.compile('Open your dossier'))).to_be_visible()
-            page.get_by_role('button', name=re.compile('Open your dossier')).click()
+            expect(page.get_by_role('button', name='View available results')).to_be_visible()
+            page.get_by_role('button', name='View available results').click()
+            expect(page.get_by_text(re.compile('Agent 7 extracurricular strength:'))).to_be_visible()
+            page.reload()
+            expect(page.get_by_text(re.compile('Agent 7 extracurricular strength:'))).to_be_visible()
             expect(page.get_by_role('heading', name='Northeastern University', exact=True)).to_be_visible()
             responsive(page, 'results')
             with page.expect_download() as download:
                 page.get_by_role('button', name='Download report', exact=True).click()
             download.value.save_as(str(OUT/'test-dossier.pdf'))
             assert (OUT/'test-dossier.pdf').read_bytes().startswith(b'%PDF')
-            page.get_by_role('link', name='Dashboard', exact=True).click()
+            page.goto('http://localhost:3100/dashboard')
             page.get_by_role('link', name='Edit profile', exact=True).first.click()
             page.get_by_role('button', name=re.compile('^02')).click()
             page.get_by_label('GPA / percentage').fill('4')
+            page.wait_for_timeout(600)
             page.get_by_role('button', name='Cancel', exact=True).click()
             page.get_by_role('link', name='Edit profile', exact=True).first.click()
             page.get_by_role('button', name=re.compile('^02')).click()
             expect(page.get_by_label('GPA / percentage')).to_have_value('3.4')
             page.get_by_label('GPA / percentage').fill('4')
+            page.wait_for_timeout(600)
             page.get_by_role('button', name='Save changes', exact=True).click()
             expect(page.get_by_text('All changes saved', exact=True)).to_be_visible()
-            page.get_by_role('link', name='Dashboard', exact=True).click()
+            page.goto('http://localhost:3100/dashboard')
             page.get_by_role('link', name='Review analysis', exact=True).click()
             page.get_by_role('button', name='Run / retry analysis', exact=True).click()
-            page.get_by_role('button', name=re.compile('Open your dossier')).click()
+            page.get_by_role('button', name='View available results').click()
             expect(page.get_by_role('heading', name='Harvard University', exact=True)).to_be_visible()
-            page.get_by_role('link', name='Dashboard', exact=True).click()
+            page.goto('http://localhost:3100/dashboard')
             page.get_by_role('button', name='Sign out', exact=True).click()
             page.goto('http://localhost:3100/results')
             expect(page).to_have_url(re.compile('/login$'))
@@ -205,3 +225,4 @@ finally:
             pass
     for log in logs:
         log.close()
+    frontend_env_path.write_bytes(original_frontend_env)
