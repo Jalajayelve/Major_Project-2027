@@ -1,8 +1,24 @@
-@"
+.web
+.states
+assets/external/
+*.py[cod]
 .web/
 .states/
 __pycache__/
 *.pyc
 .venv/
 uploaded_files/
-"@ | Out-File -Encoding utf8 .gitignore
+.env
+.env.*
+!.env.example
+.meridian/
+*.db
+*.sqlite*
+.pytest_cache/
+.venv*/
+node_modules/
+*.log
+dist/
+.test-browsers/
+.test-data/
+test-results/

@@ -5,6 +5,7 @@ from ..components.common import label
 from ..components.globe3d import globe3d
 from ..data import mock
 from ..state import State
+from .account import notice
 
 
 def _globe_bg() -> str:
@@ -21,18 +22,43 @@ def _globe_bg() -> str:
 
 def _agent(a):
     status = a["status"]
-    cls = rx.cond(status == "processing", "agent-card processing", rx.cond(status == "completed", "agent-card completed", "agent-card waiting"))
-    node_cls = rx.cond(status == "waiting", "node", rx.cond(status == "processing", "node processing", "node completed"))
+    unavailable_note = rx.cond(
+        status == "unavailable",
+        rx.el.p(
+            "No verified backend service is configured for this agent in the current environment.",
+            class_name="body",
+            style={"fontSize": "13px", "marginTop": "4px"},
+        ),
+        rx.fragment(),
+    )
+    cls = rx.cond(
+        status == "processing",
+        "agent-card processing",
+        rx.cond(status == "completed", "agent-card completed", rx.cond(status == "failed", "agent-card failed", "agent-card waiting")),
+    )
+    node_cls = rx.cond(
+        status == "completed",
+        "node completed",
+        rx.cond(status == "processing", "node processing", rx.cond(status == "failed", "node failed", rx.cond(status == "unavailable", "node unavailable", "node"))),
+    )
     right = rx.cond(
         status == "completed",
         rx.el.span("Completed", class_name="stamp"),
         rx.cond(
             status == "processing",
             rx.el.div(
-                rx.el.span("Processing ", a["pct"], class_name="mono blue", style={"fontWeight": 600}),
-                rx.el.div(rx.el.i(style={"width": a["pct"]}), class_name="progress", style={"marginTop": "10px"}),
+                rx.el.span("Request running…", class_name="mono blue request-busy", style={"fontWeight": 600}),
+
             ),
-            rx.el.span("Waiting", class_name="mono"),
+            rx.cond(
+                status == "failed",
+                rx.el.span("Failed", class_name="status-failed"),
+                rx.cond(
+                    status == "unavailable",
+                    rx.el.span("Unavailable", class_name="status-unavailable"),
+                    rx.el.span("Waiting", class_name="mono on-navy"),
+                ),
+            ),
         ),
     )
     return rx.el.div(
@@ -42,6 +68,7 @@ def _agent(a):
             rx.el.div(
                 rx.el.h3(a["name"], " agent", class_name="h3"),
                 rx.el.p(a["desc"], class_name="body", style={"fontSize": "14px", "marginTop": "4px"}),
+                unavailable_note,
                 style={"minWidth": 0},
             ),
             rx.el.div(right, class_name="agent-status"),
@@ -52,7 +79,21 @@ def _agent(a):
 
 
 def analysis_page():
+    def university_card(row):
+        return rx.el.article(
+            rx.el.div(
+                rx.el.span(row["country"], class_name="mono blue"),
+                rx.el.span("Catalog match", class_name="mono"),
+                class_name="row between wrap", style={"gap": "12px"},
+            ),
+            rx.el.h3(row["name"], class_name="h3", style={"marginTop": "12px"}),
+            rx.el.p("Catalog tier: ", row["tier"], class_name="body", style={"marginTop": "8px"}),
+            rx.el.p("Catalog GPA: ", row["gpa"], class_name="mono", style={"marginTop": "6px"}),
+            class_name="sheet sheet-pad stacked",
+        )
+
     return rx.el.div(
+        notice(),
         rx.el.div(
             globe3d("agents", class_name="globe-agents", spin="auto", arcs="progress", dark_surface=True),
             rx.el.div(State.agents_completed_count.to_string(), id="agent-progress", style={"display": "none"}),
@@ -70,17 +111,60 @@ def analysis_page():
             rx.el.main(
                 rx.el.div(
                     rx.el.div(
-                        label("Analysis in progress", "on-navy"),
-                        rx.el.h1("Seven agents are studying your file", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
+                        label("Live backend requests", "on-navy"),
+                        rx.el.h1("Your dossier, under review", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
                         rx.el.div(
                             rx.el.span(State.overall_pct, class_name="num-key", style={"fontSize": "44px"}),
-                            rx.el.span(State.agents_completed_count.to_string() + " of 7 complete", class_name="mono on-navy"),
+                            rx.el.span(State.agents_completed_count.to_string() + " of 2 API requests completed", class_name="mono on-navy"),
                             class_name="row", style={"gap": "16px", "marginTop": "28px", "alignItems": "baseline"},
                         ),
-                        rx.el.div(rx.el.i(style={"width": State.overall_pct}), class_name="progress", style={"marginTop": "14px", "maxWidth": "420px", "background": "var(--rule-on-navy)"}),
+                        rx.el.p("Five agents are not exposed through an operational API. No simulated progress is shown.", class_name="body on-navy"),
+                        rx.cond(
+                            State.analysis_error != "",
+                            rx.el.p(State.analysis_error, class_name="notice", role="alert", style={"marginTop": "20px"}),
+                            rx.fragment(),
+                        ),
+                        rx.cond(
+                            (~State.matching_ready) & (State.recommendations.length() == 0),
+                            rx.el.p(
+                                "University matching needs a country and catalog tier. "
+                                "Open Study Goals to choose both, save your profile, then retry analysis.",
+                                class_name="notice", role="status", style={"marginTop": "12px"},
+                            ),
+                            rx.fragment(),
+                        ),
                         style={"marginBottom": "56px"}, class_name="page-enter",
                     ),
-                    rx.el.div(rx.foreach(State.agents, _agent), class_name="route", style={"maxWidth": "860px"}),
+                    rx.el.div(rx.el.button("Run / retry analysis", on_click=State.run_agents, disabled=State.agents_running, class_name="tab-button on-navy"), rx.el.a("Dashboard", href="/dashboard", class_name="btn-ghost"), style={"marginBottom":"24px"}),
+                    rx.cond(
+                        State.prediction_unavailable,
+                        rx.el.div(
+                            rx.el.h2("Profile prediction unavailable", class_name="h2"),
+                            rx.el.p(
+                                "The matching results below are still valid. No profile prediction is shown; the backend error above explains whether input data or the unavailable MS/MBA model caused the failure.",
+                                class_name="body", style={"marginTop": "10px"},
+                            ),
+                            class_name="notice", role="status", style={"maxWidth": "860px", "marginTop": "32px"},
+                        ),
+                        rx.fragment(),
+                    ),
+                    rx.cond(
+                        State.recommendations.length() > 0,
+                        rx.el.section(
+                            rx.el.div(
+                                rx.el.h2("University matching results", class_name="h2"),
+                                rx.el.p(
+                                    "These are the universities returned by the backend catalog matcher.",
+                                    class_name="body", style={"marginTop": "8px"},
+                                ),
+                                class_name="page-enter",
+                            ),
+                            rx.el.div(rx.foreach(State.recommendations, university_card), class_name="grid-2", style={"marginTop": "20px"}),
+                            style={"maxWidth": "860px", "marginTop": "44px"},
+                        ),
+                        rx.fragment(),
+                    ),
+                    rx.el.div(rx.foreach(State.agents, _agent), class_name="route", style={"maxWidth": "860px", "marginTop": "36px"}),
                     rx.el.div(
                         rx.el.div(
                             rx.foreach(State.event_log, lambda e: rx.el.span(e, class_name="mono on-navy", style={"display": "block", "fontSize": "10.5px"})),
@@ -89,7 +173,7 @@ def analysis_page():
                         rx.cond(
                             State.agents_done,
                             rx.el.button(
-                                rx.el.span("Open your dossier"), rx.el.span("→", class_name="tab-arrow"),
+                                rx.el.span("View available results"), rx.el.span("→", class_name="tab-arrow"),
                                 on_click=rx.redirect("/results"), type="button", class_name="tab-button on-navy",
                             ),
                             rx.fragment(),

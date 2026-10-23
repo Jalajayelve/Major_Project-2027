@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest>=8.3
+playwright>=1.50,<2
+pandas==2.2.3
+scikit-learn==1.4.2
+joblib==1.4.2

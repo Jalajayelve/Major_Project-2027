@@ -1,0 +1,131 @@
+"""Authenticated private document storage with bounded text previews."""
+import io
+import json
+import os
+from pathlib import Path
+import uuid
+import zipfile
+from xml.etree import ElementTree
+
+from pypdf import PdfReader
+from . import storage
+
+MAX_BYTES = 10 * 1024 * 1024
+SLOTS = {'resume', 'transcript', 'sop', 'lor', 'other'}
+EXTENSIONS = {'.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg'}
+PREVIEW_LIMIT = 2000
+
+
+def validate(name, data):
+    name = name.replace('\\', '/').rsplit('/', 1)[-1][:200]
+    suffix = Path(name).suffix.lower()
+    if suffix not in EXTENSIONS:
+        raise ValueError('Use PDF, DOCX, TXT, PNG or JPEG.')
+    if not data or len(data) > MAX_BYTES:
+        raise ValueError('Choose a nonempty file up to 10 MB.')
+    valid = True
+    if suffix == '.pdf':
+        valid = data.startswith(b'%PDF-')
+    elif suffix == '.png':
+        valid = data.startswith(b'\x89PNG\r\n\x1a\n')
+    elif suffix in ('.jpg', '.jpeg'):
+        valid = data.startswith(b'\xff\xd8\xff')
+    elif suffix == '.docx':
+        try:
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                valid = {'[Content_Types].xml', 'word/document.xml'} <= set(archive.namelist())
+        except (zipfile.BadZipFile, OSError):
+            valid = False
+    elif suffix == '.txt':
+        try:
+            data.decode('utf-8')
+            valid = b'\x00' not in data
+        except UnicodeDecodeError:
+            valid = False
+    if not valid:
+        raise ValueError('The file contents do not match its format. Choose a valid file and retry.')
+    return name, suffix
+
+
+def extract_preview(name, data):
+    suffix = Path(name).suffix.lower()
+    try:
+        if suffix == '.txt':
+            text = data.decode('utf-8')
+        elif suffix == '.docx':
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                root = ElementTree.fromstring(archive.read('word/document.xml'))
+            text = ' '.join(node.text or '' for node in root.iter() if node.tag.endswith('}t'))
+        elif suffix == '.pdf':
+            reader = PdfReader(io.BytesIO(data))
+            text = '\n'.join(page.extract_text() or '' for page in reader.pages)
+        else:
+            return 'Preview unavailable for image documents.'
+    except (ElementTree.ParseError, OSError, ValueError, zipfile.BadZipFile) as exc:
+        raise ValueError('The document was stored, but its text could not be extracted.') from exc
+    text = ' '.join(text.split())
+    if not text:
+        return 'No readable text was found.'
+    return text[:PREVIEW_LIMIT] + ('…' if len(text) > PREVIEW_LIMIT else '')
+
+
+def _path(account_id, identifier):
+    # Neither client filenames nor paths determine the private storage location.
+    uuid.UUID(identifier)
+    return Path(os.getenv('MERIDIAN_DATA_DIR', '.meridian')) / 'documents' / str(account_id) / identifier
+
+
+def store(token, slot, name, data):
+    if slot not in SLOTS:
+        raise ValueError('Unknown document slot.')
+    storage.user(token)
+    name, suffix = validate(name, data)
+    identifier = str(uuid.uuid4())
+    with storage.connect() as db:
+        db.execute('BEGIN IMMEDIATE')
+        account = storage.authorized(db, token)
+        docs = json.loads(account['documents'])
+        old = docs.get(slot+'_id')
+        path = _path(account['id'], identifier)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            path.write_bytes(data)
+            preview = extract_preview(name, data)
+            docs.update({slot+'_id': identifier, slot+'_name': name, slot+'_type': suffix[1:].upper(),
+                         slot+'_size': f'{len(data):,} bytes', slot+'_status': 'Processed',
+                         slot+'_preview': preview})
+            db.execute('UPDATE users SET documents=? WHERE id=?', (json.dumps(docs), account['id']))
+            db.commit()
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
+        if old:
+            _path(account['id'], old).unlink(missing_ok=True)
+    return docs
+
+
+def download(token, slot):
+    account = storage.user(token)
+    docs = json.loads(account['documents'])
+    if slot not in SLOTS or not docs.get(slot+'_id'):
+        raise ValueError('Document not found.')
+    try:
+        return docs[slot+'_name'], _path(account['id'], docs[slot+'_id']).read_bytes()
+    except FileNotFoundError:
+        raise ValueError('The stored file is missing. Please upload it again.') from None
+
+
+def remove(token, slot):
+    if slot not in SLOTS:
+        raise ValueError('Unknown document slot.')
+    with storage.connect() as db:
+        db.execute('BEGIN IMMEDIATE')
+        account = storage.authorized(db, token)
+        docs = json.loads(account['documents'])
+        identifier = docs.get(slot+'_id')
+        docs = {key: value for key, value in docs.items() if not key.startswith(slot+'_')}
+        db.execute('UPDATE users SET documents=? WHERE id=?', (json.dumps(docs), account['id']))
+        db.commit()
+        if identifier:
+            _path(account['id'], identifier).unlink(missing_ok=True)
+    return docs

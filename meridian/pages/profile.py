@@ -2,7 +2,9 @@ import reflex as rx
 
 from ..components.common import label
 from ..components.navbar import journey_nav
-from ..data import mock
+from ..data import profile as mock
+from .account import notice
+from ..data.profile import COUNTRIES, REGIONS
 from ..state import State
 
 
@@ -12,30 +14,51 @@ def _on_change(key: str):
 
 def _field(f: dict):
     key, kind = f["key"], f["kind"]
-    if kind == "select":
+    if key == "regions":
+        control = rx.el.div(
+            rx.el.input(value=State.region_query, on_change=State.set_region_query, list="region-options", class_name="input", id=f"f-{key}", placeholder="Search and choose a state or region"),
+            rx.el.datalist(*[rx.el.option(value=v) for v in REGIONS], id="region-options"),
+            rx.el.button("Add region", on_click=State.add_region, type="button", class_name="btn-ghost"),
+            rx.el.button("Clear all regions", on_click=State.clear_regions, type="button", class_name="btn-ghost", disabled=State.regions.length() == 0),
+            rx.el.div(rx.foreach(State.regions, lambda r: rx.el.button(r, " ×", on_click=State.remove_region(r), type="button", aria_label="Remove " + r)), class_name="region-chips"))
+    elif key in ("nationality", "country"):
+        control = rx.el.div(rx.el.input(value=State.profile[key], on_change=_on_change(key), list=f"options-{key}", id=f"f-{key}", class_name="input", placeholder="Search countries"),
+            rx.el.datalist(*[rx.el.option(value=v) for v in COUNTRIES], id=f"options-{key}"))
+    elif kind == "select":
         opts = list(f["options"])
         control = rx.el.select(
+            rx.el.option("Choose…", value=""),
             *[rx.el.option(o, value=o) for o in opts],
-            default_value=mock.STUDENT_PROFILE.get(key, opts[0]),
+
             value=State.profile[key],
             on_change=_on_change(key),
             class_name="input", id=f"f-{key}",
         )
     elif kind == "textarea":
         control = rx.el.textarea(
-            default_value=State.profile[key], placeholder=f["placeholder"],
-            on_blur=_on_change(key), class_name="input", id=f"f-{key}",
+            value=State.profile[key], placeholder=f["placeholder"],
+            on_change=_on_change(key), class_name="input", id=f"f-{key}",
         )
     else:
         control = rx.el.input(
-            default_value=State.profile[key], placeholder=f["placeholder"], type=kind,
-            on_blur=_on_change(key), class_name="input", id=f"f-{key}",
+            value=State.profile[key], placeholder=f["placeholder"], type=kind,
+            on_change=_on_change(key), class_name="input", id=f"f-{key}",
         )
-    return rx.el.div(
-        rx.el.label(f["label"], html_for=f"f-{key}", class_name="field-label"),
+    field = rx.el.div(
+        rx.el.label("Preferred regions (select multiple)" if key == "regions" else f["label"], html_for=f"f-{key}", class_name="field-label"),
         control,
+        rx.el.small(
+            "Required for university matching · saved in your dossier"
+            if key in ("match_country", "match_tier")
+            else "Optional · saved in your dossier",
+            class_name="mono",
+        ),
+        rx.el.p(State.field_errors.get(key, ""), class_name="field-error", role="status"),
         class_name="field wide" if f["wide"] else "field",
     )
+    if key == "essay_score":
+        return rx.cond(State.profile["degree_goal"] == "MBA", field, rx.fragment())
+    return field
 
 
 def _panel(i: int, section: dict):
@@ -75,7 +98,7 @@ def _summary():
             label("Profile complete"),
             rx.el.p(State.completion_str, class_name="num-key", style={"fontSize": "54px", "margin": "8px 0 12px"}),
             rx.el.div(rx.el.i(style={"width": State.completion_str}), class_name="progress"),
-            rx.el.p("Optional: IELTS and GMAT. Everything else helps the agents give sharper results.", class_name="body", style={"marginTop": "18px", "fontSize": "13px"}),
+            rx.el.p("Completion reflects seven core dossier fields. Analysis explains which inputs its API needs.", class_name="body", style={"marginTop": "18px", "fontSize": "13px"}),
             class_name="sheet sheet-pad stacked",
         ),
         style={"position": "sticky", "top": "100px"},
@@ -85,12 +108,15 @@ def _summary():
 def profile_page():
     return rx.el.div(
         journey_nav(0),
+        notice(),
+        rx.el.span(custom_attrs={"data-unsaved-profile": rx.cond(State.profile_dirty, "true", "false")}, style={"display":"none"}),
+        rx.el.div(rx.el.button(rx.cond(State.saving, "Saving…", "Save changes"), on_click=State.save_profile, disabled=State.saving, class_name="tab-button"), rx.el.button("Cancel", on_click=State.cancel_profile, disabled=State.saving, class_name="btn-ghost"), rx.el.span(rx.cond(State.profile_dirty, "Unsaved changes", "All changes saved"), role="status"), class_name="container row wrap", style={"gap":"16px", "paddingTop":"24px"}),
         rx.el.main(
             rx.el.div(
                 rx.el.div(
                     label("Step 1 of 4", "blue"),
                     rx.el.h1("Student profile", class_name="h1", style={"marginTop": "10px"}),
-                    rx.el.p("Fill in your dossier section by section. Your answers are saved as you move between tabs.", class_name="lede", style={"marginTop": "14px"}),
+                    rx.el.p("Fill in your dossier section by section. Save changes or choose Next section to save. Switching tabs keeps your draft; Cancel restores the last saved version.", class_name="lede", style={"marginTop": "14px"}),
                     style={"marginBottom": "36px"}, class_name="page-enter",
                 ),
                 rx.el.div(
