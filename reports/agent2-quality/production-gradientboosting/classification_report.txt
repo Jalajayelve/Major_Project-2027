@@ -1,0 +1,22 @@
+Agent 2 production model: GradientBoostingClassifier
+Evaluation: final test split, 3,198 rows
+
+Accuracy-maximizing cutoff: 0.50
+Accuracy: 0.8843
+F1: 0.8038
+Precision: 0.9404
+Recall: 0.7019
+ROC-AUC: 0.9340
+Brier: 0.0830
+
+Confusion matrix (rows = observed, columns = predicted):
+                  Not admitted  Admitted
+Not admitted             2070        48
+Admitted                  322       758
+
+Comparison: validation-selected cutoff 0.44
+Accuracy: 0.8777 | F1: 0.8030 | Precision: 0.8807 | Recall: 0.7380
+Confusion matrix:
+                  Not admitted  Admitted
+Not admitted             2010       108
+Admitted                  283       797

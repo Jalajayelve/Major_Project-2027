@@ -1,0 +1,54 @@
+{
+  "accuracy_maximizing_result": {
+    "model": "GradientBoostingClassifier",
+    "threshold": 0.5,
+    "accuracy": 0.8843,
+    "f1": 0.8038,
+    "precision": 0.9404,
+    "recall": 0.7019,
+    "roc_auc": 0.934,
+    "brier": 0.083,
+    "confusion_matrix": [
+      [
+        2070,
+        48
+      ],
+      [
+        322,
+        758
+      ]
+    ],
+    "support": {
+      "not_admitted": 2118,
+      "admitted": 1080
+    },
+    "evaluation_rows": 3198
+  },
+  "validation_selected_comparison": {
+    "model": "GradientBoostingClassifier",
+    "threshold": 0.44,
+    "accuracy": 0.8777,
+    "f1": 0.803,
+    "precision": 0.8807,
+    "recall": 0.738,
+    "roc_auc": 0.934,
+    "brier": 0.083,
+    "confusion_matrix": [
+      [
+        2010,
+        108
+      ],
+      [
+        283,
+        797
+      ]
+    ],
+    "support": {
+      "not_admitted": 2118,
+      "admitted": 1080
+    },
+    "evaluation_rows": 3198
+  },
+  "source": "backend/app/agents/university_matching_agent/AGENT2_University_agent.ipynb, cell 46",
+  "note": "The 0.50 result is the most accurate reported production result. The 0.44 result is retained for recall-oriented comparison."
+}
