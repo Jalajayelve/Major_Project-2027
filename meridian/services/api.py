@@ -88,6 +88,9 @@ async def request(path, payload):
             probability = result.get('probability')
             if probability is not None and (type(probability) not in (int, float) or not math.isfinite(probability) or not 0 <= probability <= 1):
                 raise ValueError('The prediction API returned invalid confidence data.')
+        elif path == '/agent3/program':
+            if not isinstance(result.get('programs'), list):
+                raise ValueError('The program API returned an invalid program list.')
         return result
     except httpx.TimeoutException:
         raise ValueError('Analysis timed out. Retry when the backend is ready.') from None

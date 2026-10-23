@@ -96,9 +96,11 @@ def test_analysis_failure_finishes_and_matching_survives(isolated_store, monkeyp
     calls = []
     async def response(path, payload):
         calls.append((path, payload))
-        if path.startswith('/predict'):
+        if path == '/agent1/profile':
             raise ValueError('Model unavailable')
-        return {'matched_universities':[{'name':'Test catalog row','country':'USA','tier':'medium','gpa':3.4}]}
+        if path == '/match':
+            return {'matched_universities':[{'name':'Test catalog row','country':'USA','tier':'medium','gpa':3.4}]}
+        return {'agent':'program', 'programs':[]}
     monkeypatch.setattr(api, 'request', response)
     async def run():
         return [event async for event in State.run_agents.fn(BackgroundHarness(state))]
@@ -106,9 +108,10 @@ def test_analysis_failure_finishes_and_matching_survives(isolated_store, monkeyp
     assert not state.agents_running
     assert state.agents[0]['status'] == 'failed'
     assert state.agents[1]['status'] == 'completed'
-    assert all(a['status']=='unavailable' for a in state.agents[2:])
+    assert state.agents[2]['status'] == 'completed'
     assert state.recommendations[0]['name'] == 'Test catalog row'
     assert calls[0][1]['gre_score'] == 310
+    assert [path for path, _ in calls] == ['/agent1/profile', '/match', '/agent3/program']
     assert json.loads(storage.user(token)['results'])['university']
     state.set_field('gpa', '3.8')
     async def save():
@@ -142,6 +145,21 @@ def test_agent1_payload_maps_saved_profile():
     assert payload['track'] == 'MS'
     assert payload['gre_score'] == 310
     assert payload['work_experience_months'] == 12
+
+
+def test_agent3_response_is_validated(monkeypatch):
+    from meridian.services import api
+
+    async def fake_post(self, url, json):
+        return httpx.Response(200, json={'agent': 'program', 'programs': []}, request=httpx.Request('POST', url))
+
+    monkeypatch.setattr(httpx.AsyncClient, 'post', fake_post)
+
+    async def request():
+        return await api.request('/agent3/program', {'profile': {}, 'matched_universities': []})
+
+    result = asyncio.run(request())
+    assert isinstance(result['programs'], list)
 
 
 def test_matching_fields_are_explained_as_required_for_matching():

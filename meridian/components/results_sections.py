@@ -2,6 +2,7 @@
 import reflex as rx
 
 from ..data import mock
+from ..state import State
 from .common import bar, count_num, label
 
 
@@ -45,6 +46,26 @@ def programs_table():
         rx.el.td(p["match"], class_name="num-key", style={"fontSize": "20px"}), rx.el.td(p["duration"]), rx.el.td(p["focus"]),
     ) for p in mock.PROGRAMS]
     return rx.el.div(rx.el.table(rx.el.thead(head), rx.el.tbody(*body), class_name="plain"), style={"overflowX": "auto"})
+
+
+def live_programs_table():
+    head = rx.el.tr(*[rx.el.th(h) for h in ("University", "Program", "Fit", "Match", "Duration", "Mode")])
+    body = [
+        rx.el.tr(
+            rx.el.td(row["university"], style={"fontWeight": 500}),
+            rx.el.td(row["program_name"]),
+            rx.el.td(row["specialization_fit_score"], class_name="num-key"),
+            rx.el.td(row["match_score"], class_name="num-key"),
+            rx.el.td(row["duration"]),
+            rx.el.td(row["mode"]),
+        )
+        for row in State.program_results
+    ]
+    return rx.el.div(
+        rx.el.p("Agent 3 program-fit rankings from the saved Agent 2 shortlist. Scores are relevance rankings, not admission probabilities.", class_name="notice"),
+        rx.el.table(rx.el.thead(head), rx.el.tbody(*body), class_name="plain"),
+        style={"overflowX": "auto"},
+    )
 
 
 def financial():

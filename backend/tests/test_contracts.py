@@ -41,6 +41,25 @@ def test_agent1_profile_uses_bundled_candidate_tier_model():
     assert 'not an admission probability' in body['notice']
 
 
+def test_agent3_program_ranks_agent2_shortlist():
+    response = client.post('/agent3/program', json={
+        'profile': {'degree_goal': 'MS', 'field': 'Computer Science'},
+        'matched_universities': [{
+            'name': 'Northeastern University',
+            'country': 'USA',
+            'tier': 'medium',
+            'gpa': 3.4,
+        }],
+    })
+    assert response.status_code == 200
+    body = response.json()
+    assert body['agent'] == 'program'
+    assert body['programs']
+    assert all(item['university'] == 'Northeastern University' for item in body['programs'])
+    assert all(item['score_type'] == 'relevance_not_probability' for item in body['programs'])
+    assert all(item['admit_probability'] is None for item in body['programs'])
+
+
 @pytest.mark.parametrize('payload', [{}, {'gpa': 'nan'}, {'gpa': 10}, {'gpa': True}, {'gpa':3, 'tier':[]}, {'gpa':3, 'country':None}])
 def test_matching_rejects_bad_input(payload):
     assert client.post('/match', json=payload).status_code == 400

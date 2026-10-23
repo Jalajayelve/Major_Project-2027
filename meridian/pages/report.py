@@ -62,7 +62,7 @@ def report_page():
                 ),
                 cover,
                 _page("01", "University recommendations", R.admission_probability(), "Recommendations"),
-                _page("02", "Program matches", R.programs_table(), "Programs"),
+                _page("02", "Program matches", rx.cond(State.program_results.length() > 0, R.live_programs_table(), R.programs_table()), "Programs"),
                 _page("03", "Cost breakdown", R.financial(), "Financial"),
                 _page("04", "Scholarships", R.scholarships(), "Funding"),
                 _page("05", "Career alignment", R.career(), "Career"),

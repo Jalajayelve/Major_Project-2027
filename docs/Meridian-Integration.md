@@ -44,6 +44,7 @@ the teammate's branch; this document describes the delivered application.
 | POST `/predict/ms` | gpa, gre_score, toefl_score, research_experience, work_experience | Requires missing `ms_model.pkl`; returns explicit 503 for missing export |
 | POST `/predict/mba` | gpa, gmat_score, work_experience, essay_score | Requires missing `mba_model.pkl`; returns explicit 503 for missing export |
 | POST `/match` | gpa on 4-point scale, country, tier | Existing seven-entry heuristic catalog; returns matched_universities and count |
+| POST `/agent3/program` | saved profile plus `/match` matched_universities | Ranks catalog programs for the Agent 2 shortlist using the extracted Agent 3 lexical/TF-IDF ranker |
 
 The adapter converts explicit 4/10/100 GPA scales to 4-point GPA before calling
 the backend. GRE total is verbal + quantitative. Numeric research/essay inputs
@@ -55,6 +56,13 @@ manifest; Agent 7 expects its verified `trained_models` directory. Those bundles
 are absent. The available older artifacts are retained but never substituted.
 The matching API returns **no program details, scores, admission probabilities,
 or explanations**. Its results are labeled rule-based catalog matches.
+Agent 3 consumes those university names and resolves their programs from
+`data/raw/agent2/agent2_enhanced_program_catalog.csv`. The compatible
+`agent3_tfidf_fields.joblib` artifact is reused when its matrix shape matches
+the normalized catalog. The serialized ranker/config artifacts are not loaded
+because their original `agent3` module and serialization environment are absent.
+Agent 3 scores are relevance rankings, not admission probabilities; missing
+admission estimates remain unavailable.
 
 Documents are uploaded directly to the authenticated frontend's private SQLite-backed
 storage. TXT, DOCX and PDF files receive a bounded text preview and a processed status;

@@ -115,10 +115,10 @@ def analysis_page():
                         rx.el.h1("Your dossier, under review", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
                         rx.el.div(
                             rx.el.span(State.overall_pct, class_name="num-key", style={"fontSize": "44px"}),
-                            rx.el.span(State.agents_completed_count.to_string() + " of 2 API requests completed", class_name="mono on-navy"),
+                            rx.el.span(State.agents_completed_count.to_string() + " of 3 API requests completed", class_name="mono on-navy"),
                             class_name="row", style={"gap": "16px", "marginTop": "28px", "alignItems": "baseline"},
                         ),
-                        rx.el.p("Five agents are not exposed through an operational API. No simulated progress is shown.", class_name="body on-navy"),
+                        rx.el.p("Four agents are not exposed through an operational API. No simulated progress is shown.", class_name="body on-navy"),
                         rx.cond(
                             State.analysis_error != "",
                             rx.el.p(State.analysis_error, class_name="notice", role="alert", style={"marginTop": "20px"}),
@@ -173,6 +173,35 @@ def analysis_page():
                                 class_name="page-enter",
                             ),
                             rx.el.div(rx.foreach(State.recommendations, university_card), class_name="grid-2", style={"marginTop": "20px"}),
+                            style={"maxWidth": "860px", "marginTop": "44px"},
+                        ),
+                        rx.fragment(),
+                    ),
+                    rx.cond(
+                        State.program_results.length() > 0,
+                        rx.el.section(
+                            rx.el.h2("Program rankings", class_name="h2"),
+                            rx.el.p(
+                                "Agent 3 ranked programs from the universities returned by Agent 2. Scores are relevance rankings, not admission probabilities.",
+                                class_name="body", style={"marginTop": "8px"},
+                            ),
+                            rx.el.div(
+                                rx.foreach(
+                                    State.program_results,
+                                    lambda row: rx.el.article(
+                                        rx.el.h3(row["program_name"], class_name="h3"),
+                                        rx.el.p(row["university"], class_name="body", style={"marginTop": "6px"}),
+                                        rx.el.p(
+                                            "Fit score: ", row["specialization_fit_score"],
+                                            " · Match score: ", row["match_score"],
+                                            " · ", row["duration"], " · ", row["mode"],
+                                            class_name="mono", style={"marginTop": "8px"},
+                                        ),
+                                        class_name="sheet sheet-pad stacked",
+                                    ),
+                                ),
+                                class_name="grid-2", style={"marginTop": "20px"},
+                            ),
                             style={"maxWidth": "860px", "marginTop": "44px"},
                         ),
                         rx.fragment(),

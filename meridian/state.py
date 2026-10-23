@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def initial_agents():
-    return [{**a, 'status': 'waiting' if a['id'] in ('profile', 'university') else 'unavailable', 'pct': '', 'progress': 0} for a in mock.AGENTS]
+    return [{**a, 'status': 'waiting' if a['id'] in ('profile', 'university', 'program') else 'unavailable', 'pct': '', 'progress': 0} for a in mock.AGENTS]
 
 
 class State(rx.State):
@@ -347,6 +347,11 @@ class State(rx.State):
     def _recommendations(self):
         self.recommendations = [{k: str(v) for k, v in row.items()} for row in self.results.get('university', {}).get('matched_universities', [])]
 
+    @rx.var
+    def program_results(self) -> list[dict[str, Any]]:
+        result = self.results.get('program', {})
+        return result.get('programs', []) if isinstance(result, dict) else []
+
     @rx.event(background=True)
     async def run_agents(self):
         async with self:
@@ -370,7 +375,7 @@ class State(rx.State):
             profile = dict(self.profile)
             token = self.session
         try:
-            for index, agent in enumerate(('profile', 'university')):
+            for index, agent in enumerate(('profile', 'university', 'program')):
                 started_at = time.time()
                 storage.record_analysis_event(token, agent, 'running', started_at)
                 async with self:
@@ -383,12 +388,30 @@ class State(rx.State):
                         result = await asyncio.wait_for(api.request('/agent1/profile', payload), timeout=50)
                         if 'prediction' not in result:
                             raise ValueError('Agent 1 returned an invalid response.')
-                    else:
+                    elif agent == 'university':
                         if not profile.get('match_country') or not profile.get('match_tier'):
                             raise ValueError('Choose matching country and catalog tier in Study goals.')
                         result = await asyncio.wait_for(api.request('/match', {'gpa': api.gpa(profile), 'country': profile['match_country'], 'tier': profile['match_tier']}), timeout=50)
                         if not isinstance(result.get('matched_universities'), list):
                             raise ValueError('Matching API returned an invalid response.')
+                    else:
+                        university_result = self.results.get('university', {})
+                        matches = university_result.get('matched_universities', []) if isinstance(university_result, dict) else []
+                        if not matches:
+                            raise ValueError('Agent 3 requires a successful university shortlist.')
+                        result = await asyncio.wait_for(
+                            api.request('/agent3/program', {
+                                'profile': {
+                                    'degree_goal': profile.get('degree_goal', ''),
+                                    'field': profile.get('field', ''),
+                                    'programs': profile.get('programs', ''),
+                                },
+                                'matched_universities': matches,
+                            }),
+                            timeout=50,
+                        )
+                        if not isinstance(result.get('programs'), list):
+                            raise ValueError('Program API returned an invalid response.')
                     async with self:
                         account = storage.user(token)
                         if token != self.session:
@@ -499,6 +522,10 @@ class State(rx.State):
                  'Rule-based catalog matches; no admission probabilities are supplied.',
                  str(results.get('profile', {}).get('prediction', 'No profile prediction available.'))]
         lines += [f"{r['name']} | {r['country']} | catalog tier: {r['tier']}" for r in results.get('university', {}).get('matched_universities', [])]
+        lines += [
+            f"{p.get('university')} | {p.get('program_name')} | fit {float(p.get('match_score', 0)):.3f} | {p.get('duration', 'Not specified')}"
+            for p in results.get('program', {}).get('programs', [])
+        ]
         lines += results.get('_errors', [])
         story = []
         for line in lines:

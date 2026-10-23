@@ -117,6 +117,18 @@ def original_demo_layout():
 def results_page():
     def card(row):
         return rx.el.article(label(row["country"], "blue"), rx.el.h3(row["name"], class_name="h3"), rx.el.p("Catalog tier: ", row["tier"], class_name="body"), rx.el.p("Catalog GPA: ", row["gpa"], class_name="mono"), class_name="sheet sheet-pad stacked")
+    def program_card(row):
+        return rx.el.article(
+            rx.el.h3(row["program_name"], class_name="h3"),
+            rx.el.p(row["university"], class_name="body"),
+            rx.el.p(
+                "Fit score: ", row["specialization_fit_score"],
+                " · Match score: ", row["match_score"],
+                " · ", row["duration"], " · ", row["mode"],
+                class_name="mono", style={"marginTop": "8px"},
+            ),
+            class_name="sheet sheet-pad stacked",
+        )
     return rx.el.div(journey_nav(3), rx.el.main(
         rx.el.section(label("Your personal dossier", "on-navy"), rx.el.h1(State.student_name, class_name="h1", style={"color":"var(--ivory)"}), rx.el.p(State.target_program, class_name="lede"),
             rx.el.div(rx.el.button("Download report", on_click=State.download_report, class_name="btn-download"), rx.el.a("Printable report", href="/report", class_name="btn-ghost"), class_name="row wrap no-print", style={"gap":"20px","marginTop":"24px"}), class_name="navy sheet-pad stacked"),
@@ -129,8 +141,16 @@ def results_page():
             rx.el.p(State.prediction_text, class_name="lede"),
         )),
         _sheet("02", "University matches", "Possibilities to explore", rx.el.div(
-            rx.el.p("These are results from the backend's small rule-based catalog, filtered by GPA, country and tier. They are not trained-model recommendations or admission predictions. No program, match score or explanation is returned by this API.", class_name="notice"),
+            rx.el.p("These are university results returned by the backend matcher.", class_name="notice"),
             rx.cond(State.recommendations.length()>0, rx.el.div(rx.foreach(State.recommendations, card), class_name="result-list"), rx.el.p("No matches saved. Complete your academic details and matching preferences, then run analysis. An empty shortlist may also mean no catalog entries met your filters.", class_name="lede")))),
-        rx.el.section(label("Additional chapters"), rx.el.h2("Still to come", class_name="h2"), rx.el.p("Program analysis, finances, scholarships, careers and extracurricular scoring are unavailable through the current API. No scores or estimates have been generated.", class_name="body"), class_name="sheet sheet-pad"),
+        _sheet("03", "Program rankings", "Programs ranked for your shortlist", rx.cond(
+            State.program_results.length() > 0,
+            rx.el.div(
+                rx.el.p("Agent 3 program-fit rankings use the Agent 2 university shortlist. Scores are relevance rankings, not admission probabilities.", class_name="notice"),
+                rx.el.div(rx.foreach(State.program_results, program_card), class_name="result-list"),
+            ),
+            rx.el.p("No Agent 3 program rankings were saved.", class_name="lede"),
+        )),
+        rx.el.section(label("Additional chapters"), rx.el.h2("Still to come", class_name="h2"), rx.el.p("Financial, scholarship, career and extracurricular analysis are unavailable through the current API. No scores or estimates have been generated for those sections.", class_name="body"), class_name="sheet sheet-pad"),
         rx.el.details(rx.el.summary("Inspect the actual API response"), rx.el.pre(State.result_json, style={"whiteSpace":"pre-wrap","overflowWrap":"anywhere"}), class_name="sheet sheet-pad"),
         class_name="container", style={"padding":"48px 28px 96px","display":"grid","gap":"28px"}))
