@@ -68,7 +68,8 @@
     "employment_proxy_context": {
       "value": 0.931,
       "type": "uploaded proxy, NOT a placement rate"
-    }
+    },
+    "answer": "Suggested direction: Industry. Program evidence: engineering, software. Roles to explore: Software Engineer, Backend/Full-Stack Developer, Machine Learning Engineer. Uploaded four-year cohort earnings estimate: $255,667 USD. Model four-year cohort estimate: $164,381 USD. These describe cohort context, not a personal salary offer. Program-specific placement rate is not provided in the supplied data. Next steps: compare internships and capstones, build a relevant project portfolio, and check role requirements."
   },
   {
     "university": "Stanford University",
@@ -139,6 +140,7 @@
     "employment_proxy_context": {
       "value": 0.931,
       "type": "uploaded proxy, NOT a placement rate"
-    }
+    },
+    "answer": "Suggested direction: Industry. Program evidence: engineering, software. Roles to explore: Software Engineer, Backend/Full-Stack Developer, Machine Learning Engineer. Uploaded four-year cohort earnings estimate: $255,667 USD. Model four-year cohort estimate: $164,381 USD. These describe cohort context, not a personal salary offer. Program-specific placement rate is not provided in the supplied data. Next steps: compare internships and capstones, build a relevant project portfolio, and check role requirements."
   }
 ]

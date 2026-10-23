@@ -199,6 +199,41 @@ def load_agent6_models(directory=CAREER_MODEL_DIR):
 agent6_models=load_agent6_models()
 
 
+def career_answer(row):
+    """Give a readable answer while retaining the structured evidence in each row."""
+    path = row['career_path']
+    if path is None:
+        advice = 'Choose a research or industry goal and confirm the program pathway before deciding.'
+    elif row['stated_goal'] is not None and path != row['stated_goal']:
+        advice = f"This program supports the {path} pathway, which differs from your stated {row['stated_goal']} goal. Review the curriculum before choosing it."
+    else:
+        advice = f"Suggested direction: {path.capitalize()}."
+    reasons = row['track_evidence'].get(path, []) if path else []
+    if reasons:
+        advice += ' Program evidence: ' + ', '.join(reasons) + '.'
+    if row['expected_roles']:
+        advice += ' Roles to explore: ' + ', '.join(row['expected_roles']) + '.'
+    earnings = row.get('earnings_context')
+    if earnings:
+        supplied = earnings['uploaded_4yr_earnings_usd']
+        if supplied is not None:
+            advice += f" Uploaded four-year cohort earnings estimate: ${supplied:,.0f} USD."
+        advice += f" Model four-year cohort estimate: ${earnings['model_4yr_earnings_usd']:,.0f} USD."
+        advice += ' These describe cohort context, not a personal salary offer.'
+    else:
+        advice += ' No exact program earnings evidence was supplied.'
+    placement = row['avg_placement_stats']
+    if placement is not None:
+        advice += f" Reported program placement: {placement['placement_rate']:.1%} for the {placement['cohort_year']} cohort."
+    else:
+        advice += ' Program-specific placement rate is not provided in the supplied data.'
+    if path == 'industry':
+        advice += ' Next steps: compare internships and capstones, build a relevant project portfolio, and check role requirements.'
+    elif path == 'research':
+        advice += ' Next steps: compare thesis options, identify matching faculty, and prepare a research proposal.'
+    return advice
+
+
 def career_agent_v2(state,catalog=None,*,model_bundle=None,placement_reports=None,as_of=None,artifacts=None):
     artifacts=agent6_models if artifacts is None else artifacts
     # Preserve existing documented career-path rules and optional independently labelled classifier.
@@ -255,6 +290,8 @@ def career_agent_v2(state,catalog=None,*,model_bundle=None,placement_reports=Non
             row['review_required']=True
             row['warnings'].append('Thin or restricted evidence: treat outcome context as provisional.')
         row['warnings'].append('No independent student research/industry labels; clustering does not establish track accuracy.')
+    for row in result['careers']:
+        row['answer']=career_answer(row)
     return result
 
 
@@ -298,10 +335,15 @@ mba=next(r for r in agent6_models['lookup']['programs'] if r.get('placement_rate
 historical=career_agent({'profile':{'career_goal':'industry'},'programs':[
     {'university':mba['university_name'],'program_name':mba['program_name_catalog']}]},as_of='2000-01-01')
 check6('future_placement_cohort_withheld',historical['careers'][0]['school_placement_context'] is None)
+check6('readable_answers_for_every_program',all(bool(r['answer'].strip()) for r in new_coverage['careers']))
+check6('illustrative_industry_answers_have_roles',all(r['career_path']=='industry' and r['expected_roles'] for r in new_demo['careers']))
 print('Checks:',len(checks6),'passed')
 print('Catalog coverage:',catalog_counts_v2)
 print('Actual Agent 3 -> Agent 6 result:')
-print(json.dumps(new_demo['careers'],indent=2))
+from textwrap import fill
+for index,row in enumerate(new_demo['careers'],1):
+    print(f"\n{index}. {row['university']} | {row['program_name']}")
+    print(fill(row['answer'],width=100))
 (CAREER_REPORT_DIR/'demo_predictions.json').write_text(json.dumps(new_demo['careers'],indent=2),encoding='utf-8')
 
 # %% Final executed metrics and artifact manifest
@@ -323,5 +365,8 @@ print(f"Held-out earnings R²: {regression_test_report['r2']:.4f}; share within 
 print(f"Unsupervised clusters: {best_k}; held-out silhouette: {cluster_test_report['silhouette']:.4f}; Davies–Bouldin: {cluster_test_report['davies_bouldin']:.4f}")
 print(f"Functional checks: {len(checks6)}/{len(checks6)}; all three joblib artifacts saved and reloaded successfully.")
 print('Research-versus-industry accuracy: NOT MEASURED — no independent track labels in uploaded data.')
-print('Cluster quality and earnings-regression scores are not a 96% career-placement accuracy claim.')
 print('Joblib directory:',CAREER_MODEL_DIR)
+print('\nCAREER ANSWERS FOR THE DEMONSTRATION STUDENT')
+for index,row in enumerate(new_demo['careers'],1):
+    print(f"\n{index}. {row['university']} | {row['program_name']}")
+    print(fill(row['answer'],width=100))

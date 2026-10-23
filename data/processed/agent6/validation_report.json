@@ -1,6 +1,6 @@
 {
   "version": "agent6-outcomes-v2",
-  "created_utc": "2026-10-21T16:42:55.516529+00:00",
+  "created_utc": "2026-10-23T04:33:44.705194+00:00",
   "audit": {
     "uploaded_rows": 51842,
     "uploaded_columns": 97,
@@ -142,6 +142,14 @@
     },
     {
       "check": "future_placement_cohort_withheld",
+      "passed": true
+    },
+    {
+      "check": "readable_answers_for_every_program",
+      "passed": true
+    },
+    {
+      "check": "illustrative_industry_answers_have_roles",
       "passed": true
     }
   ],

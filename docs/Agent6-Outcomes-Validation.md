@@ -6,6 +6,13 @@ the last cell reports the current results. The original notebook is preserved in
 `data/backups/Agent6_before_outcomes_v2.zip`, rather than adding another working notebook.
 The original advisory function and independent-label training utilities remain available.
 
+The notebook contains 13 executable code cells. Its runner now executes those existing
+cells in a fresh Jupyter kernel and preserves source edits; it does not regenerate or
+truncate the notebook. Stream output, rich displays and errors are captured in the file.
+After restarting a notebook kernel, use **Restart Kernel and Run All**. The final cell
+depends on setup and trained models from earlier cells; running it alone previously
+produced `NameError: CAREER_MODEL_DIR is not defined`.
+
 ## Data and scope
 
 The uploaded `data/raw/agent6/agent_6_dataset_final_merged.csv` has 51,842 rows and
@@ -75,6 +82,12 @@ and `school_placement_context`. Career-path advice and goal alignment remain exp
 heuristic unless independently labelled student outcomes are supplied to the retained
 supervised classification workflow.
 
+Every career row also includes an `answer`: a readable direction, supporting program
+evidence, role examples, supplied/model cohort earnings context, placement-data availability
+and practical next steps. The handoff and final cells print these answers without a long
+single-line JSON dump. Unavailable placement evidence is stated explicitly; no placement
+rates or individual salary promises are invented.
+
 Program IDs and labels are checked against the Agent 2 catalog. Exact university/program
 identity is used when IDs are absent. Conflicting program IDs or UNITIDs reject enrichment.
 The upload maps 3,033 of 3,052 catalog programs; the other 19 keep the advisory fallback.
@@ -93,7 +106,7 @@ All serialized types are standard sklearn estimators or plain dictionaries; load
 not require a notebook-defined class. The models were produced with scikit-learn 1.8.0.
 Use compatible package versions and load trusted joblib files only.
 
-The notebook executes 15 retained advisory checks plus 13 new outcome/reload/integration
+The notebook executes 15 retained advisory checks plus 15 outcome/reload/integration
 checks. Its actual Agent 3 handoff uses real catalog programs with an illustrative student;
 that demonstration is not an independent student-outcome accuracy test. The earlier
 saved Agent 4 replay remains historical and imports the retained baseline Agent 6 cells.
@@ -102,8 +115,12 @@ It is not retroactively presented as a replay of the enriched Agent 6 implementa
 Reproduce from the project root:
 
 ```powershell
-python notebooks/run_agent6_outcomes_notebook.py
+python -X utf8 notebooks/run_agent6_outcomes_notebook.py
 ```
+
+Execution requires `jupyter_client` and `ipykernel` in the same Python environment as
+the model dependencies. On Windows, Jupyter must be able to set secure permissions on
+its local connection file. The reusable executor is `notebooks/execute_notebook.py`.
 
 Full results: `data/processed/agent6/validation_report.json`. The uploaded data file remains
 unchanged and Git-ignored under the project's existing Agent 6 data rule.

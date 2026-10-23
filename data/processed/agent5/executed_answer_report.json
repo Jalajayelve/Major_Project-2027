@@ -1,0 +1,563 @@
+{
+  "assessment_date": "2026-10-23",
+  "profile_type": "illustrative_not_a_real_applicant",
+  "annual_funding_gap_usd": 30000.0,
+  "confirmed_awards_usd": 0,
+  "catalog_counts": {
+    "examined": 9673,
+    "fully_recommendable": 0,
+    "needs_review": 626,
+    "ineligible": 9047
+  },
+  "shortlisted_catalog_candidates": [
+    {
+      "scholarship_id": "SCH020015",
+      "scholarship_name": "Knight-Hennessy Scholars",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: GPA requirement",
+        "unknown: deadline policy",
+        "unknown: source academic/English/other requirements need student-specific review",
+        "currency mismatch"
+      ],
+      "match_score": 0.0,
+      "source_url": "https://knight-hennessy.stanford.edu/",
+      "reported_amount": null,
+      "reported_currency": "",
+      "amount_period": "unknown",
+      "reported_deadline": "Typically Sep-Oct",
+      "uploaded_tier_a": true,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Graduate (any Stanford grad programme)",
+        "field_of_study": "All fields",
+        "university": "",
+        "gpa_requirement": "",
+        "english_requirement": "",
+        "academic_requirements": "Applying to a Stanford graduate programme; leadership focus",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Applying to a Stanford graduate programme; leadership focus"
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 2,
+      "program_context_fit": 2,
+      "university_match": true,
+      "decision": "Closed for the 2027 cohort",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog accepts all fields of study.",
+        "The named university matches your selected university.",
+        "Catalog degree levels: masters, phd."
+      ],
+      "funding_details": "Tuition/fees, living and academic stipend, and annual travel support; MS funding up to six academic quarters.",
+      "reported_amount_note": "Cash amount not supplied",
+      "deadline_details": "The 2027 cohort deadline was 6 October 2026 at 1 pm Pacific; it has passed.",
+      "source_requirements": [
+        "Applying to a Stanford graduate programme; leadership focus"
+      ],
+      "next_steps": [
+        "If you already applied, complete the separate Stanford degree application by the applicable KHS deadline or 1 December 2026, whichever is earlier. Otherwise monitor the next official call.",
+        "Admission, application-submission status and first bachelor degree date remain to be checked. The published 2027 rule generally requires a first bachelor degree from January 2020 onward, with stated exceptions."
+      ],
+      "catalog_last_verified": "2026-09-09",
+      "source_review": {
+        "name": "Knight-Hennessy Scholars",
+        "catalog_id": "SCH020015",
+        "decision": "Closed for the 2027 cohort",
+        "fit": "Accepts all nationalities and eligible full-time Stanford graduate degrees, including MS.",
+        "funding": "Tuition/fees, living and academic stipend, and annual travel support; MS funding up to six academic quarters.",
+        "timing": "The 2027 cohort deadline was 6 October 2026 at 1 pm Pacific; it has passed.",
+        "next_action": "If you already applied, complete the separate Stanford degree application by the applicable KHS deadline or 1 December 2026, whichever is earlier. Otherwise monitor the next official call.",
+        "applicant_checks": "Admission, application-submission status and first bachelor degree date remain to be checked. The published 2027 rule generally requires a first bachelor degree from January 2020 onward, with stated exceptions.",
+        "sources": [
+          "https://knight-hennessy.stanford.edu/admission/before-you-apply/eligibility",
+          "https://knight-hennessy.stanford.edu/admission/preparing-your-applications/application-deadlines",
+          "https://knight-hennessy.stanford.edu/program-overview/funding"
+        ],
+        "checked_on": "2026-10-23"
+      }
+    },
+    {
+      "scholarship_id": "SCH020027",
+      "scholarship_name": "Aga Khan Foundation International Scholarship",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: university",
+        "unknown: GPA requirement",
+        "unknown: deadline policy",
+        "unknown: source academic/English/other requirements need student-specific review",
+        "currency mismatch"
+      ],
+      "match_score": 0.0,
+      "source_url": "https://www.akdn.org/akfscholarships",
+      "reported_amount": null,
+      "reported_currency": "",
+      "amount_period": "unknown",
+      "reported_deadline": "Typically Mar-May",
+      "uploaded_tier_a": true,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Masters;PhD",
+        "field_of_study": "All fields",
+        "university": "",
+        "gpa_requirement": "",
+        "english_requirement": "",
+        "academic_requirements": "Financial need demonstrated; from AKDN focus countries",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Financial need demonstrated; from AKDN focus countries"
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 2,
+      "program_context_fit": 1,
+      "university_match": false,
+      "decision": "Prepare for the next application cycle",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog accepts all fields of study.",
+        "Catalog degree levels: masters, phd."
+      ],
+      "funding_details": "Tuition and living expenses; 50% grant and 50% repayable loan. International travel is excluded.",
+      "reported_amount_note": "Cash amount not supplied",
+      "deadline_details": "The 2026-27 cycle is closed. The provider says the next cycle opens in early 2027; an exact next deadline has not been established here.",
+      "source_requirements": [
+        "Financial need demonstrated; from AKDN focus countries"
+      ],
+      "next_steps": [
+        "Use the official eligibility/contact tool and prepare admission evidence, financial-need documents and a credible funding plan.",
+        "First-year entry, admission, academic merit, financial need, residence and local application rules must be checked."
+      ],
+      "catalog_last_verified": "2026-09-09",
+      "source_review": {
+        "name": "Aga Khan Foundation International Scholarship Programme",
+        "catalog_id": "SCH020027",
+        "decision": "Prepare for the next application cycle",
+        "fit": "India is among supported countries; the programme prioritizes postgraduate master degree study. The official page does not specifically guarantee funding at Stanford.",
+        "funding": "Tuition and living expenses; 50% grant and 50% repayable loan. International travel is excluded.",
+        "timing": "The 2026-27 cycle is closed. The provider says the next cycle opens in early 2027; an exact next deadline has not been established here.",
+        "next_action": "Use the official eligibility/contact tool and prepare admission evidence, financial-need documents and a credible funding plan.",
+        "applicant_checks": "First-year entry, admission, academic merit, financial need, residence and local application rules must be checked.",
+        "sources": [
+          "https://the.akdn/en/what-we-do/developing-human-capacity/education/international-scholarships",
+          "https://akf.org/international-scholarship-programme/"
+        ],
+        "checked_on": "2026-10-23"
+      }
+    },
+    {
+      "scholarship_id": "SCH009659",
+      "scholarship_name": "Ambassador Apartments Scholarship in Computer Science",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: university",
+        "unknown: GPA or GPA scale",
+        "unknown: deadline policy",
+        "unknown: source academic/English/other requirements need student-specific review",
+        "nonannual or missing award period"
+      ],
+      "match_score": 0.466176,
+      "source_url": "https://www.collegescholarships.org/financial-aid/scholarship/ambassador-apartments-scholarship-in-computer-science",
+      "reported_amount": 500.0,
+      "reported_currency": "USD",
+      "amount_period": "unknown",
+      "reported_deadline": "",
+      "uploaded_tier_a": false,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Bachelor; Master; PhD",
+        "field_of_study": "Computer Science",
+        "university": "Global/International",
+        "gpa_requirement": "2.0",
+        "english_requirement": "Not specified",
+        "academic_requirements": "citizen",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Selection is based upon academic merit, citizenship, and service."
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 3,
+      "program_context_fit": 1,
+      "university_match": false,
+      "decision": "Potential match; provider checks required",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog field matches Computer Science.",
+        "Catalog degree levels: bachelors, masters, phd."
+      ],
+      "funding_details": "USD 500.00 reported in catalog; award period not supplied",
+      "reported_amount_note": "USD 500.00 reported in catalog; award period not supplied",
+      "deadline_details": "No dated deadline supplied; check the current cycle with the provider.",
+      "source_requirements": [
+        "Selection is based upon academic merit, citizenship, and service.",
+        "citizen"
+      ],
+      "next_steps": [
+        "Confirm that the award can be used at your selected university.",
+        "Verify the provider GPA scale and accepted grade conversion.",
+        "Check the current application cycle and deadline.",
+        "Compare the source requirements below with your admission, English, work and other credentials.",
+        "Confirm whether the award is annual or one-time."
+      ],
+      "catalog_last_verified": "Not supplied",
+      "source_review": null
+    },
+    {
+      "scholarship_id": "SCH008630",
+      "scholarship_name": "Information Technology Scholarship",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: university",
+        "unknown: GPA or GPA scale",
+        "unknown: deadline policy",
+        "nonannual or missing award period"
+      ],
+      "match_score": 0.400531,
+      "source_url": "https://www.collegescholarships.org/financial-aid/scholarship/information-technology-scholarship",
+      "reported_amount": 500.0,
+      "reported_currency": "USD",
+      "amount_period": "unknown",
+      "reported_deadline": "",
+      "uploaded_tier_a": false,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Bachelor; Master; PhD",
+        "field_of_study": "Computer Science",
+        "university": "Global/International",
+        "gpa_requirement": "2.0",
+        "english_requirement": "Not specified",
+        "academic_requirements": "Study in Computer Science at Bachelor; Master; PhD level",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Description not available"
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 3,
+      "program_context_fit": 1,
+      "university_match": false,
+      "decision": "Potential match; provider checks required",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog field matches Computer Science.",
+        "Catalog degree levels: bachelors, masters, phd."
+      ],
+      "funding_details": "USD 500.00 reported in catalog; award period not supplied",
+      "reported_amount_note": "USD 500.00 reported in catalog; award period not supplied",
+      "deadline_details": "No dated deadline supplied; check the current cycle with the provider.",
+      "source_requirements": [
+        "Study in Computer Science at Bachelor; Master; PhD level"
+      ],
+      "next_steps": [
+        "Confirm that the award can be used at your selected university.",
+        "Verify the provider GPA scale and accepted grade conversion.",
+        "Check the current application cycle and deadline.",
+        "Confirm whether the award is annual or one-time."
+      ],
+      "catalog_last_verified": "Not supplied",
+      "source_review": null
+    }
+  ],
+  "official_source_review_date": "2026-10-23",
+  "reviewed_catalog_opportunities": [
+    {
+      "scholarship_id": "SCH020015",
+      "scholarship_name": "Knight-Hennessy Scholars",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: GPA requirement",
+        "unknown: deadline policy",
+        "unknown: source academic/English/other requirements need student-specific review",
+        "currency mismatch"
+      ],
+      "match_score": 0.0,
+      "source_url": "https://knight-hennessy.stanford.edu/",
+      "reported_amount": null,
+      "reported_currency": "",
+      "amount_period": "unknown",
+      "reported_deadline": "Typically Sep-Oct",
+      "uploaded_tier_a": true,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Graduate (any Stanford grad programme)",
+        "field_of_study": "All fields",
+        "university": "",
+        "gpa_requirement": "",
+        "english_requirement": "",
+        "academic_requirements": "Applying to a Stanford graduate programme; leadership focus",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Applying to a Stanford graduate programme; leadership focus"
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 2,
+      "program_context_fit": 2,
+      "university_match": true,
+      "decision": "Closed for the 2027 cohort",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog accepts all fields of study.",
+        "The named university matches your selected university.",
+        "Catalog degree levels: masters, phd."
+      ],
+      "funding_details": "Tuition/fees, living and academic stipend, and annual travel support; MS funding up to six academic quarters.",
+      "reported_amount_note": "Cash amount not supplied",
+      "deadline_details": "The 2027 cohort deadline was 6 October 2026 at 1 pm Pacific; it has passed.",
+      "source_requirements": [
+        "Applying to a Stanford graduate programme; leadership focus"
+      ],
+      "next_steps": [
+        "If you already applied, complete the separate Stanford degree application by the applicable KHS deadline or 1 December 2026, whichever is earlier. Otherwise monitor the next official call.",
+        "Admission, application-submission status and first bachelor degree date remain to be checked. The published 2027 rule generally requires a first bachelor degree from January 2020 onward, with stated exceptions."
+      ],
+      "catalog_last_verified": "2026-09-09",
+      "source_review": {
+        "name": "Knight-Hennessy Scholars",
+        "catalog_id": "SCH020015",
+        "decision": "Closed for the 2027 cohort",
+        "fit": "Accepts all nationalities and eligible full-time Stanford graduate degrees, including MS.",
+        "funding": "Tuition/fees, living and academic stipend, and annual travel support; MS funding up to six academic quarters.",
+        "timing": "The 2027 cohort deadline was 6 October 2026 at 1 pm Pacific; it has passed.",
+        "next_action": "If you already applied, complete the separate Stanford degree application by the applicable KHS deadline or 1 December 2026, whichever is earlier. Otherwise monitor the next official call.",
+        "applicant_checks": "Admission, application-submission status and first bachelor degree date remain to be checked. The published 2027 rule generally requires a first bachelor degree from January 2020 onward, with stated exceptions.",
+        "sources": [
+          "https://knight-hennessy.stanford.edu/admission/before-you-apply/eligibility",
+          "https://knight-hennessy.stanford.edu/admission/preparing-your-applications/application-deadlines",
+          "https://knight-hennessy.stanford.edu/program-overview/funding"
+        ],
+        "checked_on": "2026-10-23"
+      }
+    },
+    {
+      "scholarship_id": "SCH020000",
+      "scholarship_name": "Fulbright Foreign Student Program",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: university",
+        "unknown: GPA requirement",
+        "unknown: deadline policy",
+        "unknown: source academic/English/other requirements need student-specific review",
+        "currency mismatch"
+      ],
+      "match_score": 0.0,
+      "source_url": "https://foreign.fulbrightonline.org/",
+      "reported_amount": null,
+      "reported_currency": "",
+      "amount_period": "unknown",
+      "reported_deadline": "Varies by country (typically Feb-Oct)",
+      "uploaded_tier_a": true,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Masters;PhD",
+        "field_of_study": "All fields",
+        "university": "",
+        "gpa_requirement": "",
+        "english_requirement": "",
+        "academic_requirements": "Open to students from 160+ countries; country-specific requirements",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Open to students from 160+ countries; country-specific requirements"
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 2,
+      "program_context_fit": 1,
+      "university_match": false,
+      "decision": "Exclude from this MS Computer Science shortlist under the published rules",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog accepts all fields of study.",
+        "Catalog degree levels: masters, phd."
+      ],
+      "funding_details": "The published programme describes tuition, living and travel support, but this does not establish eligibility for the example applicant.",
+      "reported_amount_note": "Cash amount not supplied",
+      "deadline_details": "The verified page is for 2026-27, with a 14 May 2025 deadline. No later India master call is asserted here.",
+      "source_requirements": [
+        "Open to students from 160+ countries; country-specific requirements"
+      ],
+      "next_steps": [
+        "Remove the generic Fulbright catalog entry from the current CS application plan. Reassess only if a later official India call explicitly permits the intended field.",
+        "Country-specific field and experience rules override a broad Global / All fields catalog tag; Stanford placement is not guaranteed."
+      ],
+      "catalog_last_verified": "2026-09-09",
+      "source_review": {
+        "name": "Fulbright-Nehru Master fellowships (India-specific correction)",
+        "catalog_id": "SCH020000",
+        "decision": "Exclude from this MS Computer Science shortlist under the published rules",
+        "fit": "The accessible India-specific 2026-27 master fellowship page lists permitted fields that do not include Computer Science. It also requires at least three years of relevant paid professional experience; the illustrative profile has two.",
+        "funding": "The published programme describes tuition, living and travel support, but this does not establish eligibility for the example applicant.",
+        "timing": "The verified page is for 2026-27, with a 14 May 2025 deadline. No later India master call is asserted here.",
+        "next_action": "Remove the generic Fulbright catalog entry from the current CS application plan. Reassess only if a later official India call explicitly permits the intended field.",
+        "applicant_checks": "Country-specific field and experience rules override a broad Global / All fields catalog tag; Stanford placement is not guaranteed.",
+        "sources": [
+          "https://www.usief.org.in/fulbright-fellowships/fellowships-for-indian-citizen/fulbright-nehru-masters-fellowships/"
+        ],
+        "checked_on": "2026-10-23"
+      }
+    },
+    {
+      "scholarship_id": "SCH020027",
+      "scholarship_name": "Aga Khan Foundation International Scholarship",
+      "eligibility_match": "unknown",
+      "review_required": true,
+      "reasons": [
+        "unknown: university",
+        "unknown: GPA requirement",
+        "unknown: deadline policy",
+        "unknown: source academic/English/other requirements need student-specific review",
+        "currency mismatch"
+      ],
+      "match_score": 0.0,
+      "source_url": "https://www.akdn.org/akfscholarships",
+      "reported_amount": null,
+      "reported_currency": "",
+      "amount_period": "unknown",
+      "reported_deadline": "Typically Mar-May",
+      "uploaded_tier_a": true,
+      "raw_rules": {
+        "eligible_countries": "Global",
+        "degree_level": "Masters;PhD",
+        "field_of_study": "All fields",
+        "university": "",
+        "gpa_requirement": "",
+        "english_requirement": "",
+        "academic_requirements": "Financial need demonstrated; from AKDN focus countries",
+        "other_requirements": "",
+        "work_experience_years": "",
+        "eligibility_text": "Financial need demonstrated; from AKDN focus countries"
+      },
+      "award_status": "not_confirmed",
+      "field_fit": 2,
+      "program_context_fit": 1,
+      "university_match": false,
+      "decision": "Prepare for the next application cycle",
+      "why_suggested": [
+        "Catalog lists all nationalities; check any additional citizenship or residence rules.",
+        "Catalog accepts all fields of study.",
+        "Catalog degree levels: masters, phd."
+      ],
+      "funding_details": "Tuition and living expenses; 50% grant and 50% repayable loan. International travel is excluded.",
+      "reported_amount_note": "Cash amount not supplied",
+      "deadline_details": "The 2026-27 cycle is closed. The provider says the next cycle opens in early 2027; an exact next deadline has not been established here.",
+      "source_requirements": [
+        "Financial need demonstrated; from AKDN focus countries"
+      ],
+      "next_steps": [
+        "Use the official eligibility/contact tool and prepare admission evidence, financial-need documents and a credible funding plan.",
+        "First-year entry, admission, academic merit, financial need, residence and local application rules must be checked."
+      ],
+      "catalog_last_verified": "2026-09-09",
+      "source_review": {
+        "name": "Aga Khan Foundation International Scholarship Programme",
+        "catalog_id": "SCH020027",
+        "decision": "Prepare for the next application cycle",
+        "fit": "India is among supported countries; the programme prioritizes postgraduate master degree study. The official page does not specifically guarantee funding at Stanford.",
+        "funding": "Tuition and living expenses; 50% grant and 50% repayable loan. International travel is excluded.",
+        "timing": "The 2026-27 cycle is closed. The provider says the next cycle opens in early 2027; an exact next deadline has not been established here.",
+        "next_action": "Use the official eligibility/contact tool and prepare admission evidence, financial-need documents and a credible funding plan.",
+        "applicant_checks": "First-year entry, admission, academic merit, financial need, residence and local application rules must be checked.",
+        "sources": [
+          "https://the.akdn/en/what-we-do/developing-human-capacity/education/international-scholarships",
+          "https://akf.org/international-scholarship-programme/"
+        ],
+        "checked_on": "2026-10-23"
+      }
+    }
+  ],
+  "official_funding_plan": [
+    {
+      "name": "Knight-Hennessy Scholars",
+      "catalog_id": "SCH020015",
+      "decision": "Closed for the 2027 cohort",
+      "fit": "Accepts all nationalities and eligible full-time Stanford graduate degrees, including MS.",
+      "funding": "Tuition/fees, living and academic stipend, and annual travel support; MS funding up to six academic quarters.",
+      "timing": "The 2027 cohort deadline was 6 October 2026 at 1 pm Pacific; it has passed.",
+      "next_action": "If you already applied, complete the separate Stanford degree application by the applicable KHS deadline or 1 December 2026, whichever is earlier. Otherwise monitor the next official call.",
+      "applicant_checks": "Admission, application-submission status and first bachelor degree date remain to be checked. The published 2027 rule generally requires a first bachelor degree from January 2020 onward, with stated exceptions.",
+      "sources": [
+        "https://knight-hennessy.stanford.edu/admission/before-you-apply/eligibility",
+        "https://knight-hennessy.stanford.edu/admission/preparing-your-applications/application-deadlines",
+        "https://knight-hennessy.stanford.edu/program-overview/funding"
+      ]
+    },
+    {
+      "name": "Aga Khan Foundation International Scholarship Programme",
+      "catalog_id": "SCH020027",
+      "decision": "Prepare for the next application cycle",
+      "fit": "India is among supported countries; the programme prioritizes postgraduate master degree study. The official page does not specifically guarantee funding at Stanford.",
+      "funding": "Tuition and living expenses; 50% grant and 50% repayable loan. International travel is excluded.",
+      "timing": "The 2026-27 cycle is closed. The provider says the next cycle opens in early 2027; an exact next deadline has not been established here.",
+      "next_action": "Use the official eligibility/contact tool and prepare admission evidence, financial-need documents and a credible funding plan.",
+      "applicant_checks": "First-year entry, admission, academic merit, financial need, residence and local application rules must be checked.",
+      "sources": [
+        "https://the.akdn/en/what-we-do/developing-human-capacity/education/international-scholarships",
+        "https://akf.org/international-scholarship-programme/"
+      ]
+    },
+    {
+      "name": "J N Tata Endowment loan scholarship",
+      "catalog_id": null,
+      "decision": "Monitor the next published call; this is a loan scholarship",
+      "fit": "The published 2026 rules cover Indian citizens undertaking full-time overseas postgraduate study across disciplines, with an Indian university degree and at least 60% average marks.",
+      "funding": "The current FAQ describes awards up to INR 20 lakh, with 2% simple annual interest and repayment in years 3-7. The maximum is not an assured award.",
+      "timing": "The homepage shows the Fall 2026-Spring 2027 window closed on 29 March 2026. An older FAQ gives 15 March; both dates are past. No 2027-28 opening date is assumed.",
+      "next_action": "Monitor the official call and prepare transcripts, proposed course/costs, resume and guarantor documents.",
+      "applicant_checks": "Check age against the new cycle rules, Indian degree, percentage marks and admission. Do not convert the example GPA into a percentage without the institution policy.",
+      "sources": [
+        "https://jntataendowment.org/",
+        "https://jntataendowment.org/eligibility-criteria/",
+        "https://jntataendowment.org/faqs/"
+      ]
+    },
+    {
+      "name": "Fulbright-Nehru Master fellowships (India-specific correction)",
+      "catalog_id": "SCH020000",
+      "decision": "Exclude from this MS Computer Science shortlist under the published rules",
+      "fit": "The accessible India-specific 2026-27 master fellowship page lists permitted fields that do not include Computer Science. It also requires at least three years of relevant paid professional experience; the illustrative profile has two.",
+      "funding": "The published programme describes tuition, living and travel support, but this does not establish eligibility for the example applicant.",
+      "timing": "The verified page is for 2026-27, with a 14 May 2025 deadline. No later India master call is asserted here.",
+      "next_action": "Remove the generic Fulbright catalog entry from the current CS application plan. Reassess only if a later official India call explicitly permits the intended field.",
+      "applicant_checks": "Country-specific field and experience rules override a broad Global / All fields catalog tag; Stanford placement is not guaranteed.",
+      "sources": [
+        "https://www.usief.org.in/fulbright-fellowships/fellowships-for-indian-citizen/fulbright-nehru-masters-fellowships/"
+      ]
+    }
+  ],
+  "functional_checks": {
+    "passed": 18,
+    "cases": 18,
+    "pass_rate": 1.0,
+    "evaluation_type": "fictional_functional_checks"
+  },
+  "regression_checks": {
+    "SCH020004_foreign_destination_excluded": true,
+    "SCH020005_foreign_destination_excluded": true,
+    "SCH020016_foreign_destination_excluded": true,
+    "stanford_graduate_scope_retained": true,
+    "source_citizenship_overrides_country_tags": true,
+    "resident_alternative_not_erased": true,
+    "american_indian_not_india_citizenship": true,
+    "unrelated_careers_removed_from_cs_shortlist": true,
+    "readable_answers_include_actions_and_sources": true,
+    "no_assumed_annual_award_periods": true,
+    "candidate_awards_do_not_reduce_gap": true,
+    "raw_file_and_input_state_preserved": true,
+    "closed_official_cycle_not_apply_now": true,
+    "dated_notes_not_reused_as_live_future_advice": true,
+    "notes_not_applied_to_different_profile": true,
+    "reviewed_corrections_in_structured_answers": true,
+    "related_cs_degree_retained_for_retrieval": true,
+    "unspecified_fields_not_promoted_by_keywords": true,
+    "consortium_participation_not_assumed": true
+  },
+  "accuracy": {
+    "eligibility_selective_accuracy": null,
+    "decision_coverage": null,
+    "funding_support_test_accuracy": null,
+    "selective_96_supported": false
+  }
+}
