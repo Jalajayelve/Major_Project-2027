@@ -5,6 +5,7 @@ import io
 import json
 import os
 import logging
+import time
 from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
@@ -370,16 +371,18 @@ class State(rx.State):
             token = self.session
         try:
             for index, agent in enumerate(('profile', 'university')):
+                started_at = time.time()
+                storage.record_analysis_event(token, agent, 'running', started_at)
                 async with self:
                     if token != self.session:
                         return
                     self.agents[index]['status'] = 'processing'
                 try:
                     if agent == 'profile':
-                        payload = api.prediction_payload(profile)
-                        result = await asyncio.wait_for(api.request('/predict/'+profile['degree_goal'].lower(), payload), timeout=50)
+                        payload = api.agent1_payload(profile)
+                        result = await asyncio.wait_for(api.request('/agent1/profile', payload), timeout=50)
                         if 'prediction' not in result:
-                            raise ValueError('Prediction API returned an invalid response.')
+                            raise ValueError('Agent 1 returned an invalid response.')
                     else:
                         if not profile.get('match_country') or not profile.get('match_tier'):
                             raise ValueError('Choose matching country and catalog tier in Study goals.')
@@ -399,6 +402,7 @@ class State(rx.State):
                         self.results[agent] = result
                         self.agents[index]['status'] = 'completed'
                         self.event_log.append(f'{agent}: completed')
+                        storage.record_analysis_event(token, agent, 'completed', started_at, time.time(), result=result)
                 except Exception as exc:
                     async with self:
                         if token != self.session:
@@ -407,6 +411,7 @@ class State(rx.State):
                         detail = self._error(exc) if not isinstance(exc, asyncio.TimeoutError) else "Request timed out; retry."
                         self.analysis_error = detail
                         self.event_log.append(f'{agent}: {detail}')
+                        storage.record_analysis_event(token, agent, 'failed', started_at, time.time(), error=detail)
             async with self:
                 if token == self.session:
                     self._recommendations()
@@ -434,7 +439,22 @@ class State(rx.State):
 
     @rx.var
     def overall_pct(self) -> str:
-        return 'Request running' if self.agents_running else 'Ready'
+        if self.agents_running:
+            return 'Running'
+        return 'Complete' if self.event_log else 'Pending'
+
+    @rx.var
+    def profile_analysis_available(self) -> bool:
+        return isinstance(self.results.get("profile"), dict) and bool(self.results.get("profile", {}).get("prediction"))
+
+    @rx.var
+    def profile_analysis_summary(self) -> str:
+        result = self.results.get("profile", {})
+        if not isinstance(result, dict):
+            return "No Agent 1 result available."
+        probability = result.get("probability")
+        confidence = f" · Tier 1 probability {probability:.1%}" if isinstance(probability, (float, int)) else ""
+        return f"{result.get('prediction', 'No result')}{confidence}"
 
     @rx.var
     def matching_ready(self) -> bool:

@@ -27,6 +27,20 @@ def test_prediction_missing_models(monkeypatch, tmp_path):
     assert client.post('/predict/ms', json={}).status_code == 400
 
 
+def test_agent1_profile_uses_bundled_candidate_tier_model():
+    response = client.post('/agent1/profile', json={
+        'track': 'MS', 'gpa_normalized_4': 3.4, 'gre_score': 310,
+        'toefl_score': 100, 'has_research': 0, 'work_experience_months': 12,
+        'major': 'STEM',
+    })
+    assert response.status_code == 200
+    body = response.json()
+    assert body['agent'] == 'profile'
+    assert body['analysis'] == 'candidate_tier'
+    assert body['prediction'] in ('Tier1', 'Tier2')
+    assert 'not an admission probability' in body['notice']
+
+
 @pytest.mark.parametrize('payload', [{}, {'gpa': 'nan'}, {'gpa': 10}, {'gpa': True}, {'gpa':3, 'tier':[]}, {'gpa':3, 'country':None}])
 def test_matching_rejects_bad_input(payload):
     assert client.post('/match', json=payload).status_code == 400

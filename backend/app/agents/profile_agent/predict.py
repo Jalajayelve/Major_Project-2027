@@ -1,4 +1,5 @@
 import os
+import math
 import joblib
 import pandas as pd
 
@@ -51,4 +52,64 @@ def predict_profile_outcome(payload, program_type: str):
         "program_type": program_type,
         "prediction": str(prediction),
         "input": cleaned,
+    }
+
+
+def predict_candidate_tier(payload):
+    """Run the bundled Agent 1 candidate-tier classifier."""
+    if not isinstance(payload, dict):
+        raise ValueError("Request body must be a JSON object.")
+    required = ("track", "gpa_normalized_4")
+    missing = [key for key in required if payload.get(key) in (None, "")]
+    if missing:
+        raise ValueError(f"Missing required fields: {', '.join(missing)}")
+    track = str(payload["track"]).upper()
+    if track not in {"MS", "MBA"}:
+        raise ValueError("Agent 1 track must be MS or MBA.")
+
+    model_dir = os.path.join(Config.MODEL_DIR)
+    feature_path = os.path.join(model_dir, "feature_columns.joblib")
+    model_path = os.path.join(model_dir, "rf_tier_model.joblib")
+    if not os.path.isfile(feature_path) or not os.path.isfile(model_path):
+        raise FileNotFoundError("Agent 1 candidate-tier model artifacts are missing.")
+
+    try:
+        gpa = float(payload["gpa_normalized_4"])
+        if not 0 <= gpa <= 4:
+            raise ValueError("GPA must be between 0 and 4.")
+    except (TypeError, ValueError):
+        raise ValueError("gpa_normalized_4 must be a number between 0 and 4.") from None
+
+    numeric = {
+        "gpa_normalized_4": gpa,
+        "gre_score": float(payload.get("gre_score") or 0),
+        "toefl_score": float(payload.get("toefl_score") or 0),
+        "has_research": float(payload.get("has_research") or 0),
+        "university_rating": float(payload.get("university_rating") or 0),
+        "admit_probability": float(payload.get("admit_probability") or 0),
+        "gmat_score": float(payload.get("gmat_score") or 0),
+        "work_experience_months": float(payload.get("work_experience_months") or 0),
+    }
+    if any(not math.isfinite(value) or value < 0 for value in numeric.values()):
+        raise ValueError("Agent 1 numeric inputs must be finite and nonnegative.")
+    row = {key: numeric[key] for key in numeric}
+    row.update({
+        "track": track,
+        "admission_status": str(payload.get("admission_status") or "NA"),
+        "major": str(payload.get("major") or "NA"),
+        "work_industry": str(payload.get("work_industry") or "NA"),
+    })
+    columns = joblib.load(feature_path)
+    encoded = pd.get_dummies(pd.DataFrame([row]), columns=["track", "admission_status", "major", "work_industry"])
+    encoded = encoded.reindex(columns=columns, fill_value=0)
+    model = joblib.load(model_path)
+    prediction = int(model.predict(encoded)[0])
+    probability = float(model.predict_proba(encoded)[0, 1]) if hasattr(model, "predict_proba") else None
+    return {
+        "agent": "profile",
+        "analysis": "candidate_tier",
+        "prediction": "Tier1" if prediction == 1 else "Tier2",
+        "probability": probability,
+        "input": row,
+        "notice": "Agent 1 candidate-tier classification; this is not an admission probability.",
     }

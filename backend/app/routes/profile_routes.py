@@ -1,9 +1,22 @@
 from fastapi import APIRouter, HTTPException
 import logging
 
-from app.agents.profile_agent.predict import predict_profile_outcome
+from app.agents.profile_agent.predict import predict_candidate_tier, predict_profile_outcome
 
 router = APIRouter()
+
+
+@router.post("/agent1/profile")
+def agent1_profile(payload: dict):
+    try:
+        return predict_candidate_tier(payload)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail="Agent 1 candidate-tier artifacts are unavailable.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover
+        logging.getLogger(__name__).exception("Agent 1 failed")
+        raise HTTPException(status_code=503, detail="Agent 1 could not complete analysis.") from exc
 
 
 @router.post("/predict/ms")

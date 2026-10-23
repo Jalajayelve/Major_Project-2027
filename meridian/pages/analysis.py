@@ -149,6 +149,19 @@ def analysis_page():
                         rx.fragment(),
                     ),
                     rx.cond(
+                        State.profile_analysis_available,
+                        rx.el.section(
+                            rx.el.h2("Student profile analysis", class_name="h2"),
+                            rx.el.p(State.profile_analysis_summary, class_name="lede", style={"marginTop": "10px"}),
+                            rx.el.p(
+                                "Agent 1 candidate-tier classification. This is not an admission probability.",
+                                class_name="body", style={"marginTop": "8px"},
+                            ),
+                            style={"maxWidth": "860px", "marginTop": "32px"},
+                        ),
+                        rx.fragment(),
+                    ),
+                    rx.cond(
                         State.recommendations.length() > 0,
                         rx.el.section(
                             rx.el.div(

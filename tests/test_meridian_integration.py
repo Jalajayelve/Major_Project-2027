@@ -130,6 +130,20 @@ def test_analysis_page_renders_partial_matching_results():
     assert 'No verified backend service is configured' in rendered
 
 
+def test_agent1_payload_maps_saved_profile():
+    from meridian.services.api import agent1_payload
+
+    payload = agent1_payload({
+        'degree_goal': 'MS', 'gpa': '3.4', 'gpa_scale': '4',
+        'gre_verbal': '150', 'gre_quant': '160', 'toefl': '100',
+        'research_experience': '0', 'work_years': '1',
+        'field': 'Computer Science',
+    })
+    assert payload['track'] == 'MS'
+    assert payload['gre_score'] == 310
+    assert payload['work_experience_months'] == 12
+
+
 def test_matching_fields_are_explained_as_required_for_matching():
     from meridian.pages.profile import _field
     from meridian.data.profile import FORM_SCHEMA

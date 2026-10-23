@@ -26,6 +26,11 @@ def connect():
         documents TEXT NOT NULL DEFAULT '{}', results TEXT NOT NULL DEFAULT '{}');
       CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id INTEGER, expires REAL NOT NULL);
       CREATE TABLE IF NOT EXISTS attempts (email TEXT PRIMARY KEY, count INTEGER, reset REAL);
+      CREATE TABLE IF NOT EXISTS analysis_runs (
+        id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL, agent TEXT NOT NULL,
+        status TEXT NOT NULL, started_at REAL NOT NULL, completed_at REAL,
+        error TEXT, result TEXT
+      );
     ''')
     try:
         with db:
@@ -122,6 +127,25 @@ def save_results(token, profile, results):
         if {**empty_profile(), **json.loads(account['profile'])} != profile:
             raise ValueError('Profile changed. Run analysis again for the saved profile.')
         db.execute('UPDATE users SET results=? WHERE id=?', (json.dumps(results), account['id']))
+
+
+def record_analysis_event(token, agent, status, started_at, completed_at=None, error="", result=None):
+    with connect() as db:
+        account = authorized(db, token)
+        db.execute(
+            'INSERT INTO analysis_runs(user_id,agent,status,started_at,completed_at,error,result) VALUES(?,?,?,?,?,?,?)',
+            (account['id'], agent, status, started_at, completed_at, error, json.dumps(result) if result is not None else None),
+        )
+
+
+def analysis_history(token, limit=20):
+    with connect() as db:
+        account = authorized(db, token)
+        rows = db.execute(
+            'SELECT agent,status,started_at,completed_at,error,result FROM analysis_runs '
+            'WHERE user_id=? ORDER BY id DESC LIMIT ?', (account['id'], limit),
+        ).fetchall()
+        return [dict(row) for row in rows]
 
 
 def logout(token):

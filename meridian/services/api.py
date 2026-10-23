@@ -34,6 +34,30 @@ def prediction_payload(profile):
     return payload
 
 
+def agent1_payload(profile):
+    degree = str(profile.get("degree_goal", "")).upper()
+    if degree not in {"MS", "MBA"}:
+        raise ValueError("Select MS or MBA in Study goals.")
+    payload = {
+        "track": degree,
+        "gpa_normalized_4": gpa(profile),
+        "toefl_score": number(profile, "toefl", 0, 120) if profile.get("toefl") else 0,
+        "has_research": 1 if profile.get("research_experience", "").strip() not in ("", "0") else 0,
+        "work_experience_months": number(profile, "work_years", 0, math.inf) * 12 if profile.get("work_years") else 0,
+        "major": "Business" if "business" in profile.get("field", "").lower() else
+                 "STEM" if profile.get("field") else "NA",
+    }
+    if degree == "MS":
+        payload["gre_score"] = (
+            number(profile, "gre_verbal", 130, 170)
+            + number(profile, "gre_quant", 130, 170)
+            if profile.get("gre_verbal") and profile.get("gre_quant") else 0
+        )
+    else:
+        payload["gmat_score"] = number(profile, "gmat", 200, 800) if profile.get("gmat") else 0
+    return payload
+
+
 async def request(path, payload):
     base = os.environ.get('MERIDIAN_API_URL', 'http://127.0.0.1:8001').rstrip('/')
     try:
@@ -58,9 +82,9 @@ async def request(path, payload):
             rows = result.get('matched_universities')
             if not isinstance(rows, list) or any(not isinstance(row, dict) or any(not isinstance(row.get(k), str) or not row[k] for k in ('name', 'country', 'tier')) or not isinstance(row.get('gpa'), (int, float)) or not math.isfinite(row['gpa']) for row in rows):
                 raise ValueError('The matching API returned an invalid university list.')
-        elif path.startswith('/predict/'):
+        elif path in ('/predict/ms', '/predict/mba', '/agent1/profile'):
             if not isinstance(result.get('prediction'), str) or not result['prediction']:
-                raise ValueError('The prediction API returned an empty or invalid result.')
+                raise ValueError('The profile analysis API returned an empty or invalid result.')
             probability = result.get('probability')
             if probability is not None and (type(probability) not in (int, float) or not math.isfinite(probability) or not 0 <= probability <= 1):
                 raise ValueError('The prediction API returned invalid confidence data.')
