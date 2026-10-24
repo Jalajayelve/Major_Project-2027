@@ -26,7 +26,8 @@ NOTICE = (
     "Higher (65% and above), middle (35% to below 65%) and lower (below 35%) are score bands, "
     "not safety or admission categories. Insufficient evidence means no model score is shown. "
     "Match scores describe catalog fit, not admission likelihood. Program tier scores come "
-    "from the saved catalog; Agent 1 is not running live. Offline retrieval uses TF-IDF "
+    "from the saved catalog; Agent 1's live candidate-tier classification is retained "
+    "as orchestration context but is not a feature in this bundle. Offline retrieval uses TF-IDF "
     "text similarity, not the notebook's embedding/reranker services. Agent 7 affects "
     "the matching score, not this admission model. SHAP factors explain the uncalibrated "
     "classifier, while model scores use the calibrated classifier. Catalog tuition "
@@ -162,10 +163,16 @@ def validate_result(result: dict) -> dict:
 
 
 class Agent2Service:
-    def match_profile(self, profile: dict, agent7_result: dict) -> dict:
+    def match_profile(self, profile: dict, agent7_result: dict, agent1_result: dict | None = None) -> dict:
         # Check before importing ML libraries or starting a process. Incomplete
         # exports must never resolve to legacy, experimental, or sample models.
         require_bundle()
+        if agent1_result is not None:
+            if not isinstance(agent1_result, dict) or not isinstance(agent1_result.get("prediction"), str):
+                raise ValueError("Agent 1 returned an invalid classification.")
+            # The verified Agent 2 bundle has no Agent 1 feature column. Keep the
+            # classification as validated orchestration context, but do not
+            # invent a feature mapping or admission-weight adjustment.
         candidate = candidate_from_profile(profile, agent7_result)
         executable = model_python()
         worker = Path(__file__).with_name("agent2_worker.py")

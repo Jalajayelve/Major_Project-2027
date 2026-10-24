@@ -91,6 +91,8 @@ def test_analysis_failure_finishes_and_matching_survives(isolated_store, monkeyp
                'gre_verbal':'150','gre_quant':'160','toefl':'100','research_experience':'0',
                'match_country':'USA','match_tier':'medium'}
     storage.save(token, 'profile', profile)
+    from meridian.services import documents
+    documents.store(token, 'resume', 'resume.txt', b'Unique document evidence: climate systems research.')
     state = State(_reflex_internal_init=True)
     state.session = token
     calls = []
@@ -111,7 +113,10 @@ def test_analysis_failure_finishes_and_matching_survives(isolated_store, monkeyp
     assert state.agents[2]['status'] == 'completed'
     assert state.recommendations[0]['name'] == 'Test catalog row'
     assert calls[0][1]['gre_score'] == 310
-    assert [path for path, _ in calls] == ['/agent1/profile', '/match', '/agent3/program']
+    assert [path for path, _ in calls] == ['/agent1/profile', '/match', '/agent3/program', '/agent4/financial', '/agent6/career']
+    program_payload = next(payload for path, payload in calls if path == '/agent3/program')
+    assert 'Unique document evidence' in program_payload['profile']['interests_text']
+    assert state.results['_documents'][0]['characters'] > 0
     assert json.loads(storage.user(token)['results'])['university']
     state.set_field('gpa', '3.8')
     async def save():
@@ -132,7 +137,73 @@ def test_analysis_page_renders_partial_matching_results():
     assert 'Program rankings' not in rendered
     assert 'Extracurricular analysis' not in rendered
     assert 'Unavailable' in rendered
-    assert 'No verified backend service is configured' in rendered
+    assert 'No verified backend service is configured' not in rendered
+
+
+def test_analysis_and_results_describe_connected_agents_and_limitations():
+    from meridian.pages.analysis import analysis_page
+    from meridian.pages.results import results_page
+
+    analysis = str(analysis_page())
+    results = str(results_page())
+    assert 'of 7 analyses completed' in analysis
+    assert 'all seven connected agents' in analysis
+    assert 'Not yet connected' not in results
+    assert 'exact verified financial coverage' in results
+
+
+def test_profile_navigation_advances_every_section_and_continues(isolated_store, monkeypatch):
+    from meridian.data.profile import FORM_SCHEMA
+    from meridian.state import State
+
+    token = storage.authenticate('steps@example.com', 'long test password', True, 'Steps')
+    state = State(_reflex_internal_init=True)
+    state.session = token
+    state._load()
+    harness = BackgroundHarness(state)
+    monkeypatch.setattr(storage, 'user', lambda token: (_ for _ in ()).throw(ValueError('storage unavailable')))
+    for expected in range(1, len(FORM_SCHEMA)):
+        State.next_tab.fn(harness)
+        assert state.profile_tab == expected
+    monkeypatch.undo()
+    destination = State.next_tab.fn(harness)
+    assert state.profile_tab == len(FORM_SCHEMA) - 1
+    assert destination is not None
+    assert state.message == 'Profile saved.'
+
+
+def test_documents_are_extracted_and_reported_as_agent_inputs(isolated_store):
+    from meridian.services import documents
+
+    token = storage.authenticate('docs@example.com', 'long test password', True, 'Docs')
+    saved = documents.store(token, 'resume', 'resume.txt', b'Built a Python data analysis project.')
+    text, evidence = documents.analysis_inputs(token, saved)
+    assert 'Python data analysis project' in text
+    assert evidence[0]['status'] == 'extracted'
+    assert evidence[0]['characters'] > 0
+
+
+def test_saved_results_and_pdf_use_real_outputs_and_explicit_statuses():
+    from meridian.services.report_pdf import render_saved_report_pdf, saved_report_sections
+    from pypdf import PdfReader
+    from io import BytesIO
+
+    profile = {'full_name': 'Report Student', 'email': 'report@example.com', 'degree_goal': 'MS', 'field': 'Computer Science'}
+    results = {
+        'profile': {'prediction': 'Tier1', 'probability': .72},
+        'university': {'matched_universities': [{'name': 'Sample University', 'country': 'USA', 'tier': 'medium', 'gpa': 3.4, 'match_score': .8}]},
+        '_agent_status': {'program': {'status': 'blocked', 'error': 'No shortlist.'}, 'scholarship': {'status': 'unavailable', 'error': 'Artifacts missing.'}},
+        '_analysed_at': '2026-10-24 10:00:00 UTC',
+    }
+    sections = dict((title, lines) for title, lines in saved_report_sections(results))
+    assert any('not admission probability' in line for line in sections['Agent 1 - Profile classification'])
+    assert any('Blocked: No shortlist.' in line for line in sections['Agent 3 - Program rankings'])
+    assert any('Unavailable: Artifacts missing.' in line for line in sections['Agent 5 - Scholarships'])
+    pdf = render_saved_report_pdf(profile, results)
+    content = '\n'.join(page.extract_text() or '' for page in PdfReader(BytesIO(pdf)).pages)
+    assert 'Report Student' in content
+    assert 'Sample University' in content
+    assert 'Artifacts missing' in content
 
 
 def test_agent1_payload_maps_saved_profile():

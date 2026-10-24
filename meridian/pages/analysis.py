@@ -25,7 +25,7 @@ def _agent(a):
     unavailable_note = rx.cond(
         status == "unavailable",
         rx.el.p(
-            "No verified backend service is configured for this agent in the current environment.",
+            a["error"],
             class_name="body",
             style={"fontSize": "13px", "marginTop": "4px"},
         ),
@@ -56,7 +56,7 @@ def _agent(a):
                 rx.cond(
                     status == "unavailable",
                     rx.el.span("Unavailable", class_name="status-unavailable"),
-                    rx.el.span("Waiting", class_name="mono on-navy"),
+                    rx.cond(status == "blocked", rx.el.span("Not run", class_name="status-unavailable"), rx.el.span("Waiting", class_name="mono on-navy")),
                 ),
             ),
         ),
@@ -69,6 +69,16 @@ def _agent(a):
                 rx.el.h3(a["name"], " agent", class_name="h3"),
                 rx.el.p(a["desc"], class_name="body", style={"fontSize": "14px", "marginTop": "4px"}),
                 unavailable_note,
+                rx.cond(
+                    (status == "failed") | (status == "unavailable") | (status == "blocked"),
+                    rx.el.p(
+                        a["error"],
+                        class_name="notice",
+                        role="alert",
+                        style={"fontSize": "13px", "marginTop": "8px"},
+                    ),
+                    rx.fragment(),
+                ),
                 style={"minWidth": 0},
             ),
             rx.el.div(right, class_name="agent-status"),
@@ -115,10 +125,10 @@ def analysis_page():
                         rx.el.h1("Your dossier, under review", class_name="h1", style={"marginTop": "12px", "color": "var(--ivory)", "maxWidth": "18ch"}),
                         rx.el.div(
                             rx.el.span(State.overall_pct, class_name="num-key", style={"fontSize": "44px"}),
-                            rx.el.span(State.agents_completed_count.to_string() + " of 4 analyses completed", class_name="mono on-navy"),
+                            rx.el.span(State.agents_completed_count.to_string() + " of 7 analyses completed", class_name="mono on-navy"),
                             class_name="row", style={"gap": "16px", "marginTop": "28px", "alignItems": "baseline"},
                         ),
-                        rx.el.p("Agents 1, 2, 3 and 7 run real analysis. Financial, scholarship and career agents remain unavailable.", class_name="body on-navy"),
+                        rx.el.p("Agents 1–7 run verified analysis where supported by available artifacts and data. Detailed outputs appear on Results.", class_name="body on-navy"),
                         rx.cond(
                             State.analysis_error != "",
                             rx.el.p(State.analysis_error, class_name="notice", role="alert", style={"marginTop": "20px"}),
@@ -146,7 +156,7 @@ def analysis_page():
                             State.agents_done,
                             rx.el.div(
                                 rx.el.p(
-                                    "Analysis is complete. Open Results to view the saved profile, university, program, and extracurricular outputs.",
+                                    "Analysis is complete. Open Results to view the saved outputs from all seven connected agents.",
                                     class_name="body on-navy",
                                 ),
                                 rx.el.button(

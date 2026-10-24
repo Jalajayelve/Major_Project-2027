@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+from xml.sax.saxutils import escape
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,115 @@ from reportlab.lib.units import mm
 from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, Table, TableStyle
 
 from .. import theme as T
+
+
+AGENT_LABELS = {'profile': 'Agent 1 - Profile classification', 'university': 'Agent 2 - University matches',
+                'program': 'Agent 3 - Program rankings', 'financial': 'Agent 4 - Financial estimates',
+                'scholarship': 'Agent 5 - Scholarships', 'career': 'Agent 6 - Career alignment',
+                'extracurricular': 'Agent 7 - Extracurricular strength'}
+
+
+def result_status(results, key):
+    saved = results.get('_agent_status', {}).get(key, {})
+    if key in results:
+        return 'Completed'
+    if saved:
+        return saved.get('status', 'unavailable').capitalize() + ': ' + saved.get('error', 'No saved result.')
+    errors = [e.split(': ', 1)[-1] for e in results.get('_errors', []) if e.startswith(key + ':')]
+    return 'Failed: ' + errors[-1] if errors else 'Unavailable: no saved result; this agent has not completed analysis.'
+
+
+def document_summary(results):
+    evidence = results.get('_documents', [])
+    if not evidence:
+        return 'No document text was used in this saved analysis. Results use structured profile inputs.'
+    lines = []
+    for item in evidence:
+        consumers = ', '.join(item.get('consumed_by', []))
+        lines.append(f"{item['name']}: {item['characters']} text characters; " +
+                     (f"processed by {consumers}." if consumers else 'not analysed by an agent. ' + item.get('notice', '')) +
+                     (' Text was limited to the first 50,000 characters.' if item.get('truncated') else ''))
+    return ' '.join(lines) + ' Documents inform text relevance only; grades, budgets and Agent 7 scores come from the saved profile, not inferred document values.'
+
+
+def saved_report_sections(results):
+    """Format persisted outputs only; never fill absent results with demo values."""
+    sections = []
+    for key, title in AGENT_LABELS.items():
+        data = results.get(key, {})
+        lines = [result_status(results, key)]
+        if data:
+            if data.get('notice'):
+                lines.append(str(data['notice']))
+            if key == 'profile':
+                lines.append('Candidate classification: ' + str(data.get('prediction')))
+                if data.get('probability') is not None:
+                    lines.append(f"Tier 1 class probability: {data['probability']:.1%}; not admission probability.")
+            elif key == 'university':
+                lines.append('Source: ' + str(data.get('source', 'Saved backend matcher')) + '. Catalog tiers and match scores are not admission chances.')
+                rows = data.get('matched_universities', [])
+                lines.extend(f"{r.get('name')} | {r.get('country')} | tier {r.get('tier')} | catalog GPA {r.get('gpa', 'not supplied')} | relevance {r.get('match_score', 'not supplied')}" for r in rows)
+                if not rows:
+                    lines.append('Completed with no matching universities.')
+            elif key == 'program':
+                lines.append('Fit measures text relevance (0-1); match blends available ranking signals (0-1). Higher means more relevant, not more likely admission.')
+                rows = data.get('programs', [])
+                lines.extend(f"{i}. {r.get('university')} | {r.get('program_name')} | fit {r.get('specialization_fit_score')} | match {r.get('match_score')} | {r.get('duration')} | {r.get('mode')}" for i, r in enumerate(rows, 1))
+                if not rows:
+                    lines.append('Completed with no matching programs.')
+                lines.extend(str(w) for w in data.get('programs_warnings', []))
+            elif key == 'financial':
+                for r in data.get('finance', []):
+                    lines.append(f"{r.get('university')} | {r.get('program_name')} | annual tuition {r.get('tuition_annual')} | annual living {r.get('living_cost_annual')} | annual total {r.get('total_cost')} {r.get('currency', 'currency unspecified')}. Source: {r.get('source', 'not supplied')}; quality: {r.get('cost_data_quality', 'not supplied')}.")
+                for r in data.get('finance_skipped', []):
+                    lines.append(f"Cost unavailable: {r.get('university')} | {r.get('program_name')} | {r.get('reason', 'No exact source coverage')}")
+            elif key == 'scholarship':
+                lines.append('Retrieval scores are relevance (0-1), not award probabilities. Eligibility and amounts require provider confirmation.')
+                for r in data.get('scholarships', []):
+                    lines.append(f"{r.get('university')} | {r.get('program_name')} | funding gap {r.get('funding_gap') if r.get('funding_gap') is not None else 'unknown'} {r.get('currency', '')}")
+                    for award in r.get('recommendations', []):
+                        lines.append(f"{award.get('scholarship_name')} | potential annual coverage {award.get('potential_annual_coverage')} {award.get('currency')} | match {award.get('match_score')} | deadline {award.get('deadline')} | source {award.get('source_url') or 'not supplied'}")
+                    for review in r.get('eligibility_review', []):
+                        lines.append(f"Provider review: {review.get('scholarship_name')} | {review.get('eligibility_match')} | {', '.join(review.get('reasons', []))}")
+            elif key == 'career':
+                lines.append('Alignment is rule-based skill overlap (0-100), not probability of employment.')
+                for r in data.get('career_paths', []):
+                    lines.append(f"{r.get('career_path')} | alignment {r.get('alignment_score')} | skill gaps: {', '.join(r.get('skill_gaps', [])) or 'none identified'}")
+                lines.append(f"Model annual earnings estimate: {data.get('model_estimated_annual_earnings_usd', 'unavailable')} USD; not a salary guarantee.")
+            elif key == 'extracurricular':
+                from .agent7 import NOTICE
+                lines.append(f"Strength tier: {data.get('strength_tier')} | strength score {data.get('profile_strength_score')} / 100 | P(Strong): {data.get('P(Strong)')} | archetype cluster {data.get('achievement_archetype')} | research evidence reported: {bool(data.get('has_research_evidence'))}")
+                lines.append(NOTICE)
+            if data.get('data_sources'):
+                lines.append('Data sources: ' + str(data['data_sources']))
+        sections.append((title, lines))
+    return sections
+
+
+def render_saved_report_pdf(profile, results):
+    from reportlab.platypus import SimpleDocTemplate
+    from reportlab.lib.styles import getSampleStyleSheet
+    styles = getSampleStyleSheet()
+    buffer = io.BytesIO()
+    story = []
+    def add(text, style='BodyText'):
+        story.extend([Paragraph(escape(str(text)), styles[style]), Spacer(1, 7)])
+    add('Meridian Study Abroad Report', 'Title')
+    add(profile.get('full_name') or 'Student dossier', 'Heading1')
+    add(' | '.join(f"{label}: {profile.get(key) or 'Not supplied'}" for label, key in (
+        ('Email', 'email'), ('Degree', 'degree_goal'), ('Field', 'field'), ('Intake', 'intake'),
+        ('Country', 'match_country'), ('GPA', 'gpa'), ('GPA scale', 'gpa_scale'))))
+    add('Analysis summary', 'Heading1')
+    add('Saved analysis: ' + str(results.get('_analysed_at', 'date unavailable')))
+    add(f"{sum(key in results for key in AGENT_LABELS)} of 7 agents returned saved results. Missing and failed outputs are identified below.")
+    add(document_summary(results))
+    for title, lines in saved_report_sections(results):
+        add(title, 'Heading1')
+        for line in lines:
+            add(line)
+    add('Model classifications and source estimates are not guarantees of admission, funding, employment or salary. Verify costs and eligibility with the institution/provider.')
+    SimpleDocTemplate(buffer, pagesize=A4, title='Meridian Study Abroad Report', author='Meridian').build(story)
+    return buffer.getvalue()
 
 INK, NAVY, IVORY = HexColor(T.INK), HexColor(T.NAVY), HexColor(T.IVORY)
 PAPER, SLATE, ACCENT, ACCENT_DEEP = HexColor(T.PAPER), HexColor(T.SLATE), HexColor(T.ACCENT), HexColor(T.ACCENT_DEEP)
@@ -91,8 +201,15 @@ def render_report_pdf(report: dict[str, Any]) -> bytes:
 
     f = report["financial"]
     el += _section("Cost breakdown", "04")
-    el += [Paragraph(f"{f['total_str']} per year", _S["key"]), P(f"Budget {f['budget_str']}  |  {f['gap_str']}"), Spacer(1, 2 * mm),
-           _table([[H("ITEM"), H("ESTIMATE")]] + [[P(i["name"]), P(i["amount"])] for i in f["items"]], [W * .7, W * .3])]
+    if f.get("finance"):
+        el += [P(f.get("notice", "Agent 4 financial estimates."), "body"),
+               _table([[H("UNIVERSITY"), H("PROGRAM"), H("TUITION"), H("LIVING"), H("TOTAL")]] +
+                      [[P(row["university"]), P(row["program_name"]), P(row["tuition_annual"]),
+                        P(row["living_cost_annual"]), P(row["total_cost"])] for row in f["finance"]],
+                      [W * .22, W * .30, W * .16, W * .16, W * .16])]
+    else:
+        el += [Paragraph(f"{f['total_str']} per year", _S["key"]), P(f"Budget {f['budget_str']}  |  {f['gap_str']}"), Spacer(1, 2 * mm),
+               _table([[H("ITEM"), H("ESTIMATE")]] + [[P(i["name"]), P(i["amount"])] for i in f["items"]], [W * .7, W * .3])]
 
     el += _section("Scholarships", "05")
     el += [_table([[H("AWARD"), H("VALUE"), H("FIT")]] + [[P(x["name"]), P(x["value"]), P(x["fit"])] for x in report["scholarships"]],
@@ -100,9 +217,15 @@ def render_report_pdf(report: dict[str, Any]) -> bytes:
 
     c = report["career"]
     el += _section("Career alignment", "06")
-    el += [P(c["summary"], "body"), Spacer(1, 2 * mm),
-           _table([[H("ROLE"), H("FIT"), H("SALARY RANGE")]] + [[P(r["role"]), P(f"{r['fit']}%"), P(r["salary"])] for r in c["roles"]],
-                  [W * .5, W * .15, W * .35])]
+    if c.get("career_paths"):
+        el += [P(c.get("notice", "Rule-based career alignment; no employment outcome is asserted."), "body"), Spacer(1, 2 * mm),
+               _table([[H("CAREER PATH"), H("ALIGNMENT"), H("SKILL GAPS")]] +
+                      [[P(r["career_path"]), P(f"{r['alignment_score']}%"), P(", ".join(r["skill_gaps"]) or "None identified")]
+                       for r in c["career_paths"]], [W * .42, W * .18, W * .40])]
+    else:
+        el += [P(c["summary"], "body"), Spacer(1, 2 * mm),
+               _table([[H("ROLE"), H("FIT"), H("SALARY RANGE")]] + [[P(r["role"]), P(f"{r['fit']}%"), P(r["salary"])] for r in c["roles"]],
+                      [W * .5, W * .15, W * .35])]
 
     e = report["extracurricular"]
     el += _section("Extracurricular strength", "07")
@@ -110,6 +233,10 @@ def render_report_pdf(report: dict[str, Any]) -> bytes:
 
     el += _section("Key model factors", "08")
     el += [_table([[H("FACTOR"), H("IMPACT")]] + [[P(k["name"]), P(k["impact"])] for k in report["key_factors"]], [W * .75, W * .25]),
-           Spacer(1, 4 * mm), P("Figures are illustrative estimates generated for demonstration and are not a guarantee of admission or funding.", "body")]
+           Spacer(1, 4 * mm), P(
+               "Model outputs and source-based estimates are not guarantees of admission, funding, employment, or salary. "
+               "Rows without verified source coverage are not inferred.",
+               "body",
+           )]
     doc.build(el)
     return buf.getvalue()

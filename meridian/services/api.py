@@ -5,6 +5,10 @@ import logging
 import httpx
 
 
+class AgentUnavailable(ValueError):
+    """Service or required artifacts are unavailable, rather than a bad analysis."""
+
+
 def number(profile, key, low, high):
     try:
         value = float(profile.get(key, ''))
@@ -71,7 +75,8 @@ async def request(path, payload):
                 detail = 'Request failed'
             if response.status_code == 401:
                 detail = 'The analysis service rejected authorization. Check the service configuration.'
-            raise ValueError(f'Analysis API ({response.status_code}): {detail}')
+            error = AgentUnavailable if response.status_code in (404, 503) else ValueError
+            raise error(f'Analysis API ({response.status_code}): {detail}')
         try:
             result = response.json()
         except ValueError:
@@ -91,8 +96,60 @@ async def request(path, payload):
         elif path == '/agent3/program':
             if not isinstance(result.get('programs'), list):
                 raise ValueError('The program API returned an invalid program list.')
+            for row in result['programs']:
+                if (not isinstance(row, dict) or
+                        any(not isinstance(row.get(k), str) for k in ('university', 'program_name', 'duration', 'mode')) or
+                        any(type(row.get(k)) not in (int, float) or not math.isfinite(row[k]) or not 0 <= row[k] <= 1
+                            for k in ('match_score', 'specialization_fit_score'))):
+                    raise ValueError('The program API returned invalid relevance scores or program details.')
+        elif path == '/agent6/career':
+            paths = result.get('career_paths')
+            if (not isinstance(paths, list) or not paths or
+                    not isinstance(result.get('top_path'), str) or
+                    type(result.get('model_estimated_annual_earnings_usd')) not in (int, float) or
+                    not math.isfinite(result['model_estimated_annual_earnings_usd'])):
+                raise ValueError('The career API returned an invalid response.')
+            for path_result in paths:
+                if (not isinstance(path_result, dict) or
+                        not isinstance(path_result.get('career_path'), str) or
+                        type(path_result.get('alignment_score')) not in (int, float) or
+                        not 0 <= path_result['alignment_score'] <= 100 or
+                        not isinstance(path_result.get('skill_gaps'), list) or
+                        not isinstance(path_result.get('required_skills'), list)):
+                    raise ValueError('The career API returned an invalid career path.')
+        elif path == '/agent4/financial':
+            finance = result.get('finance')
+            if not isinstance(finance, list) or not finance:
+                raise ValueError('The financial API returned an invalid result list.')
+            for row in finance:
+                if (not isinstance(row, dict) or not isinstance(row.get('university'), str)
+                        or not isinstance(row.get('program_name'), str)
+                        or type(row.get('tuition_annual')) not in (int, float)
+                        or type(row.get('living_cost_annual')) not in (int, float)
+                        or type(row.get('total_cost')) not in (int, float)
+                        or any(not math.isfinite(row[key]) or row[key] < 0 for key in ('tuition_annual', 'living_cost_annual', 'total_cost'))):
+                    raise ValueError('The financial API returned an invalid cost result.')
+            skipped = result.get('finance_skipped', [])
+            if not isinstance(skipped, list):
+                raise ValueError('The financial API returned invalid skipped-program details.')
+        elif path == '/agent5/scholarship':
+            scholarships = result.get('scholarships')
+            if not isinstance(scholarships, list) or not scholarships:
+                raise ValueError('The scholarship API returned an invalid result list.')
+            for item in scholarships:
+                if (not isinstance(item, dict) or not isinstance(item.get('university'), str)
+                        or not isinstance(item.get('program_name'), str)
+                        or not isinstance(item.get('recommendations'), list)
+                        or not isinstance(item.get('eligibility_review'), list)):
+                    raise ValueError('The scholarship API returned an invalid result.')
+                for recommendation in item['recommendations']:
+                    if (not isinstance(recommendation, dict)
+                            or not isinstance(recommendation.get('scholarship_name'), str)
+                            or type(recommendation.get('match_score')) not in (int, float)
+                            or not 0 <= recommendation['match_score'] <= 1):
+                        raise ValueError('The scholarship API returned invalid recommendation details.')
         return result
     except httpx.TimeoutException:
         raise ValueError('Analysis timed out. Retry when the backend is ready.') from None
     except httpx.HTTPError:
-        raise ValueError('Cannot reach the analysis API. Check MERIDIAN_API_URL and start the backend, then retry.') from None
+        raise AgentUnavailable('Cannot reach the analysis API. Check MERIDIAN_API_URL and start the backend, then retry.') from None

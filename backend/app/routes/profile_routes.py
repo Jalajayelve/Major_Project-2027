@@ -3,6 +3,9 @@ import logging
 
 from app.agents.profile_agent.predict import predict_candidate_tier, predict_profile_outcome
 from app.agents.program_agent.program import rank_programs
+from app.agents.career_agent.career import analyze_career
+from app.agents.financial_agent.financial import analyze_financial, FinancialUnavailable
+from app.agents.scholarship_agent.scholarship import analyze_scholarships, ScholarshipUnavailable
 
 router = APIRouter()
 
@@ -31,6 +34,47 @@ def agent1_profile(payload: dict):
     except Exception as exc:  # pragma: no cover
         logging.getLogger(__name__).exception("Agent 1 failed")
         raise HTTPException(status_code=503, detail="Agent 1 could not complete analysis.") from exc
+
+
+@router.post("/agent6/career")
+def agent6_career(payload: dict):
+    try:
+        return analyze_career(payload.get("profile", {}))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail="Agent 6 career artifacts are unavailable.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover
+        logging.getLogger(__name__).exception("Agent 6 failed")
+        raise HTTPException(status_code=503, detail="Agent 6 could not complete career analysis.") from exc
+
+
+@router.post("/agent4/financial")
+def agent4_financial(payload: dict):
+    try:
+        return analyze_financial(payload)
+    except FinancialUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail="Agent 4 model artifacts are unavailable.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover
+        logging.getLogger(__name__).exception("Agent 4 failed")
+        raise HTTPException(status_code=503, detail="Agent 4 could not complete financial analysis.") from exc
+
+
+@router.post("/agent5/scholarship")
+def agent5_scholarship(payload: dict):
+    try:
+        return analyze_scholarships(payload)
+    except ScholarshipUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover
+        logging.getLogger(__name__).exception("Agent 5 failed")
+        raise HTTPException(status_code=503, detail="Agent 5 could not complete scholarship analysis.") from exc
 
 
 @router.post("/predict/ms")

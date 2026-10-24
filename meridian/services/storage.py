@@ -119,13 +119,15 @@ def save_profile(token, profile, expected):
             db.execute('UPDATE users SET profile=?, results=? WHERE id=?', (json.dumps(profile), '{}', account['id']))
 
 
-def save_results(token, profile, results):
+def save_results(token, profile, results, expected_documents=None):
     from ..data.profile import empty_profile
     with connect() as db:
         db.execute('BEGIN IMMEDIATE')
         account = authorized(db, token)
         if {**empty_profile(), **json.loads(account['profile'])} != profile:
             raise ValueError('Profile changed. Run analysis again for the saved profile.')
+        if expected_documents is not None and json.loads(account['documents']) != expected_documents:
+            raise ValueError('Documents changed. Run analysis again for the saved documents.')
         db.execute('UPDATE users SET results=? WHERE id=?', (json.dumps(results), account['id']))
 
 

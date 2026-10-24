@@ -17,7 +17,12 @@ def _slot(d: dict):
     empty = rx.el.div(
         label(d["label"], "ink"),
         rx.el.p("Drop a file here", class_name="serif", style={"fontSize": "20px", "fontWeight": 600, "margin": "6px 0 2px"}),
-        rx.el.button("Browse files", type="button", class_name="btn-ghost"),
+        rx.el.button(
+            "Browse files",
+            type="button",
+            class_name="btn-ghost",
+            on_click=rx.call_script(f"document.querySelector('#{uid} input[type=file]').click()"),
+        ),
         rx.el.span("PDF, DOCX, TXT, PNG or JPEG · up to 10 MB", style={"fontSize": "13px", "color": "var(--ink-soft)"}),
         class_name="drop",
     )

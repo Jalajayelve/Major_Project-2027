@@ -36,6 +36,33 @@ def test_validation_at_save_and_loading(account):
     assert json.loads(storage.user(account)['profile'])['gpa'] == '8.4'
 
 
+def test_profile_next_tab_advances_and_final_step_redirects(account):
+    state = State(_reflex_internal_init=True)
+    state.session = account
+    state._load()
+
+    for expected_tab in range(1, 7):
+        assert state.next_tab() is None
+        assert state.profile_tab == expected_tab
+
+    redirect = state.next_tab()
+    assert "/documents" in str(redirect)
+
+
+def test_profile_next_tab_redirects_when_session_is_missing():
+    state = State(_reflex_internal_init=True)
+    redirect = state.next_tab()
+    assert "/login" in str(redirect)
+
+
+def test_loading_saved_results_never_restores_obsolete_unavailable_agent_status(account):
+    state = State(_reflex_internal_init=True)
+    state.session = account
+    state._load()
+    assert all(row["status"] == "waiting" for row in state.agents)
+    assert not any(row["status"] == "unavailable" for row in state.agents)
+
+
 def test_regions_preferences_reload_cancel(account):
     state = State(_reflex_internal_init=True)
     state.session = account
@@ -144,3 +171,18 @@ def test_bad_api_responses_terminate(monkeypatch, status, body):
     monkeypatch.setattr(httpx.AsyncClient, 'post', response)
     with pytest.raises(ValueError):
         asyncio.run(api.request('/match', {}))
+
+def test_next_section_not_blocked_by_hidden_error(account):
+    state = State(_reflex_internal_init=True)
+    state.session = account
+    state._load()
+    state.profile['toefl'] = '999'
+    state.next_tab()
+    assert state.profile_tab == 1
+    state.profile_tab = 6
+    assert state.next_tab() is None
+    assert state.profile_tab == 2
+    assert 'TOEFL' in state.message.upper()
+    state.profile['toefl'] = '100'
+    state.profile_tab = 6
+    assert '/documents' in str(state.next_tab())

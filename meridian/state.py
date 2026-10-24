@@ -1,26 +1,54 @@
 ﻿"""Meridian state: authenticated persistence and real request-level analysis."""
 from __future__ import annotations
 import asyncio
-import io
 import json
 import os
 import logging
 import time
 from pathlib import Path
-from typing import Any
-from xml.sax.saxutils import escape
+from typing import Any, TypedDict
 import reflex as rx
 from .data import mock
 from .data.profile import FORM_SCHEMA, US_STATES, empty_profile
 from .services import storage, api, validation, documents
 from .services.agent7 import Agent7Service, Agent7Unavailable, NOTICE as AGENT7_NOTICE
+from .services.agent2 import Agent2Service, Agent2Unavailable
 
 logger = logging.getLogger(__name__)
+
+
+class AnalysisBlocked(ValueError):
+    """A dependency produced no usable input; the dependent agent was not run."""
 
 AGENT7_RESULT_KEYS = frozenset({
     "strength_tier", "profile_strength_score", "P(Strong)",
     "achievement_archetype", "has_research_evidence",
 })
+
+
+class ScholarshipRecommendation(TypedDict):
+    scholarship_name: str
+    eligibility_match: str
+    potential_annual_coverage: float
+    currency: str
+    deadline: str
+    match_score: float
+    source_url: str
+
+
+class ScholarshipReview(TypedDict):
+    scholarship_name: str
+    eligibility_match: str
+    reasons: list[str]
+
+
+class ScholarshipResult(TypedDict):
+    university: str
+    program_name: str
+    currency: str
+    funding_gap: float | None
+    recommendations: list[ScholarshipRecommendation]
+    eligibility_review: list[ScholarshipReview]
 
 
 def agent7_report_text(results):
@@ -40,7 +68,7 @@ def agent7_report_text(results):
 
 
 def initial_agents():
-    return [{**a, 'status': 'waiting' if a['id'] in ('profile', 'university', 'program', 'extracurricular') else 'unavailable', 'pct': '', 'progress': 0} for a in mock.AGENTS]
+    return [{**a, 'status': 'waiting', 'pct': '', 'progress': 0, 'error': ''} for a in mock.AGENTS]
 
 
 class State(rx.State):
@@ -107,6 +135,9 @@ class State(rx.State):
 
     def _load(self):
         account = storage.user(self.session)
+        if self.agents_running and self.session == self._loaded_session:
+            # Route on_load must not replace an in-flight run with older DB results.
+            return
         self.profile = {**empty_profile(), **json.loads(account['profile'])}
         if self.profile.get('regions', '').strip().casefold() in {state.casefold() for state in US_STATES if ',' in state}:
             self.profile['regions'] = self.profile['regions'].strip() + ';'
@@ -119,10 +150,14 @@ class State(rx.State):
         errors = self.results.get('_errors', [])
         self.agents = initial_agents()
         for row in self.agents:
+            row['status'] = 'waiting'
             if row['id'] in self.results:
                 row['status'] = 'completed'
             elif any(error.startswith(row['id'] + ':') for error in errors):
                 row['status'] = 'failed'
+            saved_status = self.results.get('_agent_status', {}).get(row['id'], {})
+            if isinstance(saved_status, dict) and saved_status.get('status') in ('completed', 'failed', 'unavailable', 'blocked'):
+                row.update(status=saved_status['status'], error=saved_status.get('error', ''))
         self.event_log = [f"{row['id']}: completed" for row in self.agents if row['status'] == 'completed'] + errors
         self._recommendations()
         self.authenticated = True
@@ -271,11 +306,23 @@ class State(rx.State):
 
     @rx.event
     def next_tab(self):
-        try:
-            self._save_profile()
-            if self.profile_tab == len(FORM_SCHEMA)-1:
-                return rx.redirect('/documents')
+        if self.profile_tab < len(FORM_SCHEMA)-1:
             self.profile_tab += 1
+            self.message = 'Draft retained. Save changes or continue to documents when finished.'
+            return
+        try:
+            storage.user(self.session)
+            self.field_errors = validation.profile_errors(self.profile)
+            blocking = set(self.field_errors)
+            if blocking:
+                self.profile_tab = next((i for i, section in enumerate(FORM_SCHEMA)
+                    if any(field['key'] in blocking for field in section['fields'])), self.profile_tab)
+                self.message = 'Please correct: ' + ', '.join(
+                    field['label'] for section in FORM_SCHEMA for field in section['fields']
+                    if field['key'] in blocking) + '.'
+                return
+            self._save_profile()
+            return rx.redirect('/documents')
         except Exception as exc:
             self.message = self._error(exc)
 
@@ -317,7 +364,10 @@ class State(rx.State):
                 self.docs = docs
                 self.uploaded_slots = [s for s in documents.SLOTS if docs.get(s+'_name')]
                 self.upload_states[slot] = 'Stored'
-                self.message = 'File stored privately and processed for a text preview.'
+                self.results = {}
+                self.recommendations = []
+                self.event_log = []
+                self.message = 'File stored privately. ' + docs[slot+'_status'] + '. Run analysis to use readable text.'
         except Exception as exc:
             if token == self.session:
                 self.upload_states[slot] = 'Failed'
@@ -357,6 +407,9 @@ class State(rx.State):
             self.docs = documents.remove(self.session, slot)
             self.uploaded_slots = [s for s in self.uploaded_slots if s != slot]
             self.upload_states.pop(slot, None)
+            self.results = {}
+            self.recommendations = []
+            self.event_log = []
             self.message = 'Document removed.'
         except Exception as exc:
             self.message = self._error(exc)
@@ -374,12 +427,144 @@ class State(rx.State):
         return len(self.uploaded_slots)
 
     def _recommendations(self):
-        self.recommendations = [{k: str(v) for k, v in row.items()} for row in self.results.get('university', {}).get('matched_universities', [])]
+        result = self.results.get('university', {})
+        rows = result.get('matched_universities', []) if isinstance(result, dict) else []
+        self.recommendations = [{**{k: str(v) for k, v in row.items()},
+                                 'gpa': str(row.get('gpa', 'Not supplied')),
+                                 'match_score': str(row.get('match_score', 'Not supplied'))} for row in rows]
+
+    @staticmethod
+    def _agent2_rows(result: dict) -> list[dict[str, Any]]:
+        """Adapt the verified Agent 2 schema to Agent 3's shortlist contract."""
+        rows = result.get('universities')
+        if not isinstance(rows, list):
+            raise ValueError('Agent 2 returned an invalid university shortlist.')
+        return [
+            {
+                'name': row['name'],
+                'country': row['country'],
+                'tier': row['tier'],
+                'match_score': row['match_score'],
+                'agent2_id': row['id'],
+                'agent2_note': row['note'],
+                'agent2_probability': row['probability'],
+            }
+            for row in rows
+        ]
 
     @rx.var
     def program_results(self) -> list[dict[str, Any]]:
         result = self.results.get('program', {})
         return result.get('programs', []) if isinstance(result, dict) else []
+
+    @rx.var
+    def financial_available(self) -> bool:
+        result = self.results.get('financial')
+        return isinstance(result, dict) and isinstance(result.get('finance'), list) and bool(result.get('finance'))
+
+    @rx.var
+    def financial_results(self) -> list[dict[str, Any]]:
+        result = self.results.get('financial', {})
+        rows = result.get('finance', []) if isinstance(result, dict) else []
+        return [{**row, 'currency': row.get('currency') or 'Currency unspecified',
+                 'source': row.get('source') or row.get('model_artifact') or 'Source not supplied'}
+                for row in rows if isinstance(row, dict)]
+
+    @rx.var
+    def financial_summary(self) -> str:
+        saved = self._result_status('financial')
+        if saved:
+            return saved
+        for error in self.results.get('_errors', []):
+            if error.startswith('financial:'):
+                return error.split(': ', 1)[-1]
+        return 'Agent 4 financial analysis is unavailable for this saved analysis.'
+
+    @rx.var
+    def financial_skipped(self) -> list[dict[str, Any]]:
+        result = self.results.get('financial', {})
+        return result.get('finance_skipped', []) if isinstance(result, dict) else []
+
+    @rx.var
+    def scholarship_available(self) -> bool:
+        result = self.results.get('scholarship')
+        return isinstance(result, dict) and isinstance(result.get('scholarships'), list) and bool(result.get('scholarships'))
+
+    @rx.var
+    def scholarship_results(self) -> list[ScholarshipResult]:
+        result = self.results.get('scholarship', {})
+        if not isinstance(result, dict):
+            return []
+        return [
+            {
+                'university': str(item.get('university', '')),
+                'program_name': str(item.get('program_name', '')),
+                'currency': str(item.get('currency', '')),
+                'funding_gap': item.get('funding_gap'),
+                'recommendations': item.get('recommendations', []),
+                'eligibility_review': item.get('eligibility_review', []),
+            }
+            for item in result.get('scholarships', [])
+            if isinstance(item, dict)
+        ]
+
+    @rx.var
+    def scholarship_summary(self) -> str:
+        result = self.results.get('scholarship', {})
+        if isinstance(result, dict) and result.get('notice'):
+            return str(result['notice'])
+        return self._result_status('scholarship') or 'Agent 5 scholarship analysis is unavailable for this saved analysis.'
+
+    @rx.var
+    def career_available(self) -> bool:
+        result = self.results.get('career')
+        return isinstance(result, dict) and isinstance(result.get('career_paths'), list) and bool(result.get('career_paths'))
+
+    @rx.var
+    def career_paths(self) -> list[dict[str, Any]]:
+        result = self.results.get('career', {})
+        return result.get('career_paths', []) if isinstance(result, dict) else []
+
+    @rx.var
+    def career_summary(self) -> str:
+        result = self.results.get('career', {})
+        if isinstance(result, dict) and result.get('notice'):
+            return str(result['notice'])
+        return self._result_status('career') or 'Agent 6 career alignment is unavailable for this saved analysis.'
+
+    @rx.var
+    def university_summary(self) -> str:
+        result = self.results.get('university', {})
+        if isinstance(result, dict) and result.get('notice'):
+            return str(result['notice'])
+        return self._result_status('university') or 'University matching returned no rows.'
+
+    @rx.var
+    def program_summary(self) -> str:
+        result = self.results.get('program', {})
+        if isinstance(result, dict) and result.get('notice'):
+            return str(result['notice'])
+        return self._result_status('program') or 'Program ranking returned no rows.'
+
+    def _result_status(self, agent: str) -> str:
+        if agent in self.results:
+            return ''
+        saved = self.results.get('_agent_status', {}).get(agent, {})
+        if isinstance(saved, dict) and saved.get('status'):
+            status = str(saved['status']).capitalize()
+            detail = str(saved.get('error') or '')
+            return f'{status}: {detail}' if detail else f'{status}: no result was saved.'
+        for error in self.results.get('_errors', []):
+            if isinstance(error, str) and error.startswith(agent + ':'):
+                return 'Failed: ' + error.split(':', 1)[1].strip()
+        return 'Unavailable: this agent has no saved result.'
+
+    @rx.var
+    def career_earnings_estimate(self) -> str:
+        result = self.results.get('career', {})
+        if isinstance(result, dict) and result.get('model_estimated_annual_earnings_usd') is not None:
+            return f"${float(result['model_estimated_annual_earnings_usd']):,.2f} model estimate"
+        return 'Not available'
 
     @rx.event(background=True)
     async def run_agents(self):
@@ -402,9 +587,17 @@ class State(rx.State):
             self.recommendations = []
             self.event_log = []
             profile = dict(self.profile)
+            document_snapshot = dict(self.docs)
             token = self.session
         try:
-            for agent in ('profile', 'extracurricular', 'university', 'program'):
+            document_text, evidence = await asyncio.to_thread(documents.analysis_inputs, token, document_snapshot)
+            text_profile = dict(profile)
+            text_profile['interests_text'] = '\n'.join(filter(None, [profile.get('field'), profile.get('programs'), document_text]))
+            text_profile['projects'] = '\n'.join(filter(None, [profile.get('projects'), document_text]))
+            async with self:
+                self.results['_documents'] = evidence
+                self.event_log.append(f'Documents: {sum(item["status"] == "extracted" for item in evidence)} readable; {sum(item["status"] != "extracted" for item in evidence)} unavailable. Structured scores use the saved profile only.')
+            for agent in ('profile', 'extracurricular', 'university', 'program', 'financial', 'scholarship', 'career'):
                 index = next(i for i, row in enumerate(self.agents) if row['id'] == agent)
                 started_at = time.time()
                 storage.record_analysis_event(token, agent, 'running', started_at)
@@ -423,38 +616,114 @@ class State(rx.State):
                     elif agent == 'university':
                         if not profile.get('match_country') or not profile.get('match_tier'):
                             raise ValueError('Choose matching country and catalog tier in Study goals.')
-                        result = await asyncio.wait_for(api.request('/match', {'gpa': api.gpa(profile), 'country': profile['match_country'], 'tier': profile['match_tier']}), timeout=50)
+                        agent1_result = self.results.get('profile')
+                        agent7_result = self.results.get('extracurricular')
+                        if isinstance(agent7_result, dict) and AGENT7_RESULT_KEYS.issubset(agent7_result):
+                            try:
+                                verified = await asyncio.wait_for(
+                                    asyncio.to_thread(
+                                        Agent2Service().match_profile,
+                                        profile,
+                                        agent7_result,
+                                        agent1_result,
+                                    ),
+                                    timeout=100,
+                                )
+                                result = {
+                                    **verified,
+                                    'matched_universities': self._agent2_rows(verified),
+                                    'source': 'verified_agent2_bundle',
+                                }
+                            except Agent2Unavailable as exc:
+                                # The repository's legacy /match route remains
+                                # the supported fallback when the optional
+                                # verified Agent 2 export is absent.
+                                result = await asyncio.wait_for(
+                                    api.request('/match', {
+                                        'gpa': api.gpa(profile),
+                                        'country': profile['match_country'],
+                                        'tier': profile['match_tier'],
+                                    }),
+                                    timeout=50,
+                                )
+                                result['source'] = 'legacy_match_route'
+                                result['notice'] = str(exc) + ' Using the existing GPA/country/tier catalog matcher; no admission probability.'
+                        else:
+                            result = await asyncio.wait_for(
+                                api.request('/match', {
+                                    'gpa': api.gpa(profile),
+                                    'country': profile['match_country'],
+                                    'tier': profile['match_tier'],
+                                }),
+                                timeout=50,
+                            )
+                            result['source'] = 'legacy_match_route'
                         if not isinstance(result.get('matched_universities'), list):
                             raise ValueError('Matching API returned an invalid response.')
-                    else:
+                    elif agent == 'program':
                         university_result = self.results.get('university', {})
                         matches = university_result.get('matched_universities', []) if isinstance(university_result, dict) else []
                         if not matches:
-                            raise ValueError('Agent 3 requires a successful university shortlist.')
+                            raise AnalysisBlocked('Agent 3 requires a nonempty university shortlist.')
                         result = await asyncio.wait_for(
                             api.request('/agent3/program', {
-                                'profile': {
-                                    'degree_goal': profile.get('degree_goal', ''),
-                                    'field': profile.get('field', ''),
-                                    'programs': profile.get('programs', ''),
-                                },
+                                'profile': text_profile,
                                 'matched_universities': matches,
                             }),
                             timeout=50,
                         )
                         if not isinstance(result.get('programs'), list):
                             raise ValueError('Program API returned an invalid response.')
+                    elif agent == 'financial':
+                        program_result = self.results.get('program', {})
+                        programs = program_result.get('programs', []) if isinstance(program_result, dict) else []
+                        result = await asyncio.wait_for(
+                            api.request('/agent4/financial', {
+                                'degree_goal': profile.get('degree_goal', ''),
+                                'programs': programs,
+                            }),
+                            timeout=50,
+                        )
+                        if not isinstance(result.get('finance'), list):
+                            raise ValueError('Financial API returned an invalid response.')
+                    elif agent == 'scholarship':
+                        financial_result = self.results.get('financial', {})
+                        finance = financial_result.get('finance', []) if isinstance(financial_result, dict) else []
+                        if not finance:
+                            raise AnalysisBlocked('Agent 5 requires successful Agent 4 financial results; its service was not executed.')
+                        result = await asyncio.wait_for(
+                            api.request('/agent5/scholarship', {
+                                'profile': profile,
+                                'finance': finance,
+                            }),
+                            timeout=50,
+                        )
+                        if not isinstance(result.get('scholarships'), list):
+                            raise ValueError('Scholarship API returned an invalid response.')
+                    else:
+                        result = await asyncio.wait_for(
+                            api.request('/agent6/career', {'profile': text_profile}),
+                            timeout=50,
+                        )
+                        if not isinstance(result.get('career_paths'), list):
+                            raise ValueError('Career API returned an invalid response.')
                     async with self:
                         account = storage.user(token)
                         if token != self.session:
                             return
-                        if {**empty_profile(), **json.loads(account['profile'])} != profile:
+                        if ({**empty_profile(), **json.loads(account['profile'])} != profile or
+                                json.loads(account['documents']) != document_snapshot):
                             self.results = {}
                             self.recommendations = []
-                            self.event_log.append('Profile changed. Run analysis again for the saved profile.')
+                            self.event_log.append('Profile or documents changed. Run analysis again for the saved inputs.')
                             self.agents[index]['status'] = 'cancelled'
                             return
                         self.results[agent] = result
+                        if agent in ('program', 'career'):
+                            for item in evidence:
+                                if item['status'] == 'extracted':
+                                    item['consumed_by'].append(agent)
+                            self.results['_documents'] = evidence
                         self.agents[index]['status'] = 'completed'
                         self.event_log.append(f'{agent}: completed')
                         storage.record_analysis_event(token, agent, 'completed', started_at, time.time(), result=result)
@@ -462,16 +731,22 @@ class State(rx.State):
                     async with self:
                         if token != self.session:
                             return
-                        self.agents[index]['status'] = 'failed'
+                        status = ('blocked' if isinstance(exc, AnalysisBlocked) else
+                                  'unavailable' if isinstance(exc, (api.AgentUnavailable, Agent7Unavailable, Agent2Unavailable)) else 'failed')
+                        self.agents[index]['status'] = status
                         detail = self._error(exc) if not isinstance(exc, asyncio.TimeoutError) else "Request timed out; retry."
-                        self.analysis_error = detail
+                        self.agents[index]['error'] = detail
+                        if not self.analysis_error:
+                            self.analysis_error = detail
                         self.event_log.append(f'{agent}: {detail}')
-                        storage.record_analysis_event(token, agent, 'failed', started_at, time.time(), error=detail)
+                        storage.record_analysis_event(token, agent, status, started_at, time.time(), error=detail)
             async with self:
                 if token == self.session:
                     self._recommendations()
-                    self.results['_errors'] = [e for e in self.event_log if not e.endswith(': completed')]
-                    storage.save_results(token, profile, self.results)
+                    self.results['_errors'] = [f"{a['id']}: {a['error']}" for a in self.agents if a['error']]
+                    self.results['_agent_status'] = {a['id']: {'status': a['status'], 'error': a['error']} for a in self.agents}
+                    self.results['_analysed_at'] = time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())
+                    storage.save_results(token, profile, self.results, document_snapshot)
         except Exception as exc:
             async with self:
                 if token == self.session:
@@ -530,7 +805,9 @@ class State(rx.State):
     def overall_pct(self) -> str:
         if self.agents_running:
             return 'Running'
-        return 'Complete' if self.event_log else 'Pending'
+        if not self.event_log:
+            return 'Pending'
+        return 'Complete' if self.agents_completed_count == 7 else 'Partial' if self.agents_completed_count else 'No results'
 
     @rx.var
     def profile_analysis_available(self) -> bool:
@@ -551,21 +828,31 @@ class State(rx.State):
 
     @rx.var
     def prediction_unavailable(self) -> bool:
-        return bool(self.agents) and self.agents[0]['status'] == 'failed' and 'profile' not in self.results
+        return 'profile' not in self.results
 
     @rx.var
     def prediction_text(self) -> str:
         result = self.results.get('profile', {})
-        return str(result.get('prediction', 'No profile prediction available. The backend requires its original MS/MBA model exports.'))
+        return str(result.get('prediction', self._result_status('profile')))
 
     @rx.var
     def prediction_confidence(self) -> str:
         probability = self.results.get('profile', {}).get('probability')
-        return f'Model class confidence: {probability:.1%} (not admission probability)' if isinstance(probability, (float, int)) else ''
+        return f'Tier 1 class probability: {probability:.1%} (not admission probability)' if isinstance(probability, (float, int)) else ''
 
     @rx.var
     def result_json(self) -> str:
         return json.dumps(self.results, indent=2, ensure_ascii=False) if self.results else 'No saved analysis yet.'
+
+    @rx.var
+    def report_sections(self) -> list[dict[str, str]]:
+        from .services.report_pdf import saved_report_sections
+        return [{'no': f'{index:02d}', 'title': title, 'body': '\n'.join(lines)}
+                for index, (title, lines) in enumerate(saved_report_sections(self.results), 1)]
+
+    @rx.var
+    def saved_agent_count(self) -> int:
+        return sum(agent in self.results for agent in ('profile', 'university', 'program', 'financial', 'scholarship', 'career', 'extracurricular'))
 
     @rx.event
     def select_uni(self, uni_id: str):
@@ -580,22 +867,5 @@ class State(rx.State):
             return
         profile = json.loads(account['profile'])
         results = json.loads(account['results'])
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-        from reportlab.lib.styles import getSampleStyleSheet
-        buffer = io.BytesIO()
-        styles = getSampleStyleSheet()
-        lines = [profile.get('full_name', 'Your dossier'), ' '.join(filter(None, [profile.get('degree_goal'), profile.get('field')])),
-                 'Rule-based catalog matches; no admission probabilities are supplied.',
-                 str(results.get('profile', {}).get('prediction', 'No profile prediction available.'))]
-        lines += [f"{r['name']} | {r['country']} | catalog tier: {r['tier']}" for r in results.get('university', {}).get('matched_universities', [])]
-        lines += [
-            f"{p.get('university')} | {p.get('program_name')} | fit {float(p.get('match_score', 0)):.3f} | {p.get('duration', 'Not specified')}"
-            for p in results.get('program', {}).get('programs', [])
-        ]
-        lines += [agent7_report_text(results)]
-        lines += results.get('_errors', [])
-        story = []
-        for line in lines:
-            story.extend([Paragraph(escape(line), styles['BodyText']), Spacer(1, 12)])
-        SimpleDocTemplate(buffer).build(story)
-        return rx.download(data=buffer.getvalue(), filename='Meridian-Dossier.pdf')
+        from .services.report_pdf import render_saved_report_pdf
+        return rx.download(data=render_saved_report_pdf(profile, results), filename='Meridian-Dossier.pdf')

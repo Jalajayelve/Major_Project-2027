@@ -8,6 +8,7 @@ from pypdf import PdfReader
 from meridian.data.profile import empty_profile
 from meridian.services import api, storage, validation
 from meridian.services.agent7 import Agent7Service, candidate_from_profile
+from meridian.services.agent2 import Agent2Service, NOTICE as AGENT2_NOTICE
 from meridian.services.agent2 import candidate_from_profile as agent2_candidate
 from meridian.state import State, agent7_report_text
 from test_meridian_integration import BackgroundHarness
@@ -82,7 +83,7 @@ def test_analysis_persistence_reload_pdf_invalidation(state, other_agents, monke
     result = state.results['extracurricular']
     assert state.agents[6]['status'] == 'completed'
     assert state.agents[1]['status'] == state.agents[2]['status'] == 'completed'
-    assert [path for path, _ in other_agents] == ['/agent1/profile', '/match', '/agent3/program']
+    assert [path for path, _ in other_agents] == ['/agent1/profile', '/match', '/agent3/program', '/agent4/financial', '/agent6/career']
     assert set(other_agents[1][1]) == {'gpa', 'country', 'tier'}
     assert json.loads(storage.user(state.session)['results'])['extracurricular'] == result
     completed = next(row for row in storage.analysis_history(state.session) if row['agent'] == 'extracurricular' and row['status'] == 'completed')
@@ -106,6 +107,34 @@ def test_analysis_persistence_reload_pdf_invalidation(state, other_agents, monke
     restored._save_profile()
     assert restored.results == {}
     assert json.loads(storage.user(state.session)['results']) == {}
+
+
+def test_verified_agent2_receives_agent1_and_agent7_outputs(state, other_agents, monkeypatch):
+    captured = {}
+
+    def match_profile(service, profile, agent7_result, agent1_result=None):
+        captured['profile'] = profile
+        captured['agent7'] = agent7_result
+        captured['agent1'] = agent1_result
+        return {
+            'universities': [{
+                'id': 'fixture-1', 'name': 'Verified University', 'program': 'MS Computer Science',
+                'country': 'USA', 'region': 'Northeast', 'institution_type': 'Research',
+                'tier': 'Middle', 'evidence_reason': '', 'probability': .5, 'prob_str': '50.0%',
+                'match_score': .8, 'match_str': '80.0%', 'tier_score': 60,
+                'tuition': None, 'tuition_str': 'Not listed', 'factors': [], 'note': 'Verified',
+            }],
+            'notice': AGENT2_NOTICE,
+            'retrieval': 'TF-IDF',
+        }
+
+    monkeypatch.setattr(Agent2Service, 'match_profile', match_profile)
+    run(state)
+
+    assert captured['agent1']['prediction'] == 'Contract fixture'
+    assert captured['agent7']['profile_strength_score'] == state.results['extracurricular']['profile_strength_score']
+    assert state.results['university']['source'] == 'verified_agent2_bundle'
+    assert state.results['university']['matched_universities'][0]['agent2_id'] == 'fixture-1'
 
 def test_missing_runtime_preserves_other_results_and_retry(state, other_agents, monkeypatch):
     with monkeypatch.context() as patch:

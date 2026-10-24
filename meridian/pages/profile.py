@@ -62,19 +62,24 @@ def _field(f: dict):
 
 
 def _panel(i: int, section: dict):
-    return rx.cond(
-        State.profile_tab == i,
+    content = rx.el.div(
         rx.el.div(
-            rx.el.div(
-                label(f"Section {i + 1} of {len(mock.FORM_SCHEMA)}", "blue"),
-                rx.el.h2(section["label"], class_name="h2", style={"marginTop": "8px"}),
-                style={"margin": "8px 0 28px"},
-            ),
-            rx.el.div(*[_field(f) for f in section["fields"]], class_name="form-grid"),
-            rx.el.p("Agent 7 needs all eight structured achievement fields. Use documented scores from 0 to 10; uploads and free text are not converted into scores. Leave unknown values blank; enter 0 only for known absence. These inputs produce synthetic-rubric strength, not admission chances.", class_name="notice") if section['id'] == 'experience' else rx.fragment(),
-            key=section["id"], class_name="page-enter",
+            label(f"Section {i + 1} of {len(mock.FORM_SCHEMA)}", "blue"),
+            rx.el.h2(section["label"], class_name="h2", style={"marginTop": "8px"}),
+            style={"margin": "8px 0 28px"},
         ),
-        rx.fragment(),
+        rx.el.div(*[_field(f) for f in section["fields"]], class_name="form-grid"),
+        rx.el.p(
+            "Agent 7 needs all eight structured achievement fields. Use documented scores from 0 to 10; "
+            "uploads and free text are not converted into scores. Leave unknown values blank; enter 0 only "
+            "for known absence. These inputs produce synthetic-rubric strength, not admission chances.",
+            class_name="notice",
+        ) if section["id"] == "experience" else rx.fragment(),
+        class_name="page-enter",
+    )
+    return rx.el.div(
+        rx.cond(State.profile_tab == i, content, rx.fragment()),
+        class_name="profile-panel",
     )
 
 
@@ -117,7 +122,7 @@ def profile_page():
                 rx.el.div(
                     label("Step 1 of 4", "blue"),
                     rx.el.h1("Student profile", class_name="h1", style={"marginTop": "10px"}),
-                    rx.el.p("Fill in your dossier section by section. Save changes or choose Next section to save. Switching tabs keeps your draft; Cancel restores the last saved version.", class_name="lede", style={"marginTop": "14px"}),
+                    rx.el.p("Fill in your dossier section by section. Next section keeps your draft and moves forward. Save changes or Continue to documents saves it; Cancel restores the last saved version.", class_name="lede", style={"marginTop": "14px"}),
                     style={"marginBottom": "36px"}, class_name="page-enter",
                 ),
                 rx.el.div(
@@ -125,6 +130,7 @@ def profile_page():
                         rx.el.div(*[_tab(i, s) for i, s in enumerate(mock.FORM_SCHEMA)], class_name="tabs", role="tablist"),
                         rx.el.div(
                             *[_panel(i, s) for i, s in enumerate(mock.FORM_SCHEMA)],
+                            notice(),
                             rx.el.div(
                                 rx.el.button("Back", on_click=State.prev_tab, type="button", class_name="btn-ghost",
                                              style={"visibility": rx.cond(State.profile_tab == 0, "hidden", "visible")}),

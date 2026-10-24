@@ -59,7 +59,12 @@ def _cover():
                 ),
                 rx.el.div(
                     rx.el.button("Download report", class_name="btn-download", type="button", on_click=State.download_report),
-                    rx.el.a(rx.el.button("View printable report", class_name="btn-ghost", type="button", style={"color": "var(--ivory)", "borderColor": "var(--rule-on-navy)"}), href="/report"),
+                    rx.el.a(
+                        "View printable report",
+                        href="/report",
+                        class_name="btn-ghost",
+                        style={"color": "var(--ivory)", "borderColor": "var(--rule-on-navy)"},
+                    ),
                     class_name="row wrap", style={"gap": "16px", "marginTop": "34px"},
                 ),
             ),
@@ -96,7 +101,7 @@ def original_demo_layout():
                     _sheet("03", "Program recommendations", "Programs worth applying to", R.programs_table()),
                     _sheet("04", "Admission probability", "Your odds, school by school", R.admission_probability(),
                            "Illustrative estimates from your profile. They are not guarantees."),
-                    _sheet("05", "Financial estimate", "What it will cost", R.financial()),
+                    _sheet("05", "Financial estimate", "What it will cost", rx.cond(State.financial_available, R.live_financial(), rx.el.p(State.financial_summary, class_name="notice"))),
                     _sheet("06", "Scholarships", "Funding you may qualify for", R.scholarships()),
                     _sheet("07", "Career alignment", "Where this degree can lead", R.career()),
                     _sheet(
@@ -121,13 +126,13 @@ def original_demo_layout():
 
 def results_page():
     def card(row):
-        return rx.el.article(label(row["country"], "blue"), rx.el.h3(row["name"], class_name="h3"), rx.el.p("Catalog tier: ", row["tier"], class_name="body"), rx.el.p("Catalog GPA: ", row["gpa"], class_name="mono"), class_name="sheet sheet-pad stacked")
+        return rx.el.article(label(row["country"], "blue"), rx.el.h3(row["name"], class_name="h3"), rx.el.p("Catalog tier: ", row["tier"], class_name="body"), rx.el.p("Catalog GPA: ", row["gpa"], class_name="mono"), rx.cond(row["match_score"] != "Not supplied", rx.el.p("Catalog relevance score: ", row["match_score"], " (not an admission probability)", class_name="mono"), rx.fragment()), class_name="sheet sheet-pad stacked")
     def program_card(row):
         return rx.el.article(
             rx.el.h3(row["program_name"], class_name="h3"),
             rx.el.p(row["university"], class_name="body"),
             rx.el.p(
-                "Fit score: ", row["specialization_fit_score"],
+                "Specialization relevance: ", row["specialization_fit_score"],
                 " · Match score: ", row["match_score"],
                 " · ", row["duration"], " · ", row["mode"],
                 class_name="mono", style={"marginTop": "8px"},
@@ -140,21 +145,21 @@ def results_page():
         _sheet("01", "Profile", "Your profile analysis", rx.cond(
             State.prediction_unavailable,
             rx.el.p(
-                "Profile prediction unavailable. The MS/MBA prediction model is not installed, so no prediction is shown.",
+                State.prediction_text,
                 class_name="notice",
             ),
-            rx.el.p(State.prediction_text, class_name="lede"),
+            rx.el.div(rx.el.p(State.prediction_text, class_name="lede"), rx.cond(State.profile_analysis_available, rx.el.p(State.prediction_confidence, class_name="notice"), rx.fragment())),
         )),
         _sheet("02", "University matches", "Possibilities to explore", rx.el.div(
-            rx.el.p("These are university results returned by the backend matcher.", class_name="notice"),
-            rx.cond(State.recommendations.length()>0, rx.el.div(rx.foreach(State.recommendations, card), class_name="result-list"), rx.el.p("No matches saved. Complete your academic details and matching preferences, then run analysis. An empty shortlist may also mean no catalog entries met your filters.", class_name="lede")))),
+            rx.el.p("These are university results returned by the backend matcher. Catalog tiers and relevance scores are not admission chances.", class_name="notice"),
+            rx.cond(State.recommendations.length()>0, rx.el.div(rx.foreach(State.recommendations, card), class_name="result-list"), rx.el.p(State.university_summary, class_name="lede")))),
         _sheet("03", "Program rankings", "Programs ranked for your shortlist", rx.cond(
             State.program_results.length() > 0,
             rx.el.div(
                 rx.el.p("Agent 3 program-fit rankings use the Agent 2 university shortlist. Scores are relevance rankings, not admission probabilities.", class_name="notice"),
                 rx.el.div(rx.foreach(State.program_results, program_card), class_name="result-list"),
             ),
-            rx.el.p("No Agent 3 program rankings were saved.", class_name="lede"),
+            rx.el.p(State.program_summary, class_name="lede"),
         )),
         _sheet(
             "04",
@@ -162,6 +167,21 @@ def results_page():
             "Beyond grades and scores",
             rx.cond(State.agent7_available, R.live_extracurricular(), rx.el.p(State.agent7_summary, class_name="notice")),
         ),
-        rx.el.section(label("Additional chapters"), rx.el.h2("Still to come", class_name="h2"), rx.el.p("Financial, scholarship and career analysis are unavailable through the current API. No scores or estimates have been generated for those sections.", class_name="body"), class_name="sheet sheet-pad"),
+        _sheet(
+            "05", "Career alignment", "Where your degree can lead",
+            rx.cond(State.career_available, R.live_career(), rx.el.p(State.career_summary, class_name="notice")),
+        ),
+        _sheet("06", "Financial estimate", "What it will cost", rx.cond(State.financial_available, R.live_financial(), rx.el.p(State.financial_summary, class_name="notice"))),
+        _sheet("07", "Scholarships", "Funding you may qualify for", rx.cond(State.scholarship_available, R.live_scholarships(), rx.el.p(State.scholarship_summary, class_name="notice"))),
+        rx.el.section(
+            label("Evidence and limitations"),
+            rx.el.h2("What to verify before applying", class_name="h2"),
+            rx.el.p(
+                "The seven connected agents show verified results when their artifacts and source data cover your profile. "
+                "Rows without exact verified financial coverage and unavailable admission models remain explicitly marked rather than inferred.",
+                class_name="body",
+            ),
+            class_name="sheet sheet-pad",
+        ),
         rx.el.details(rx.el.summary("Inspect the actual API response"), rx.el.pre(State.result_json, style={"whiteSpace":"pre-wrap","overflowWrap":"anywhere"}), class_name="sheet sheet-pad"),
         class_name="container", style={"padding":"48px 28px 96px","display":"grid","gap":"28px"}))

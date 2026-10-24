@@ -14,6 +14,7 @@ MAX_BYTES = 10 * 1024 * 1024
 SLOTS = {'resume', 'transcript', 'sop', 'lor', 'other'}
 EXTENSIONS = {'.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg'}
 PREVIEW_LIMIT = 2000
+ANALYSIS_LIMIT = 50000
 
 
 def validate(name, data):
@@ -47,7 +48,7 @@ def validate(name, data):
     return name, suffix
 
 
-def extract_preview(name, data):
+def extract_text(name, data):
     suffix = Path(name).suffix.lower()
     try:
         if suffix == '.txt':
@@ -60,13 +61,42 @@ def extract_preview(name, data):
             reader = PdfReader(io.BytesIO(data))
             text = '\n'.join(page.extract_text() or '' for page in reader.pages)
         else:
-            return 'Preview unavailable for image documents.'
+            return ''  # No OCR is configured; image contents are not analysed.
     except (ElementTree.ParseError, OSError, ValueError, zipfile.BadZipFile) as exc:
-        raise ValueError('The document was stored, but its text could not be extracted.') from exc
+        raise ValueError('The document text could not be extracted.') from exc
     text = ' '.join(text.split())
-    if not text:
-        return 'No readable text was found.'
-    return text[:PREVIEW_LIMIT] + ('…' if len(text) > PREVIEW_LIMIT else '')
+    return text
+
+
+def extract_preview(name, data):
+    text = extract_text(name, data)
+    return text[:PREVIEW_LIMIT] + ('…' if len(text) > PREVIEW_LIMIT else '') if text else 'No readable text; OCR is not configured.'
+
+
+def analysis_inputs(token, snapshot):
+    """Read the exact saved files, not their truncated UI previews."""
+    account = storage.user(token)
+    evidence, texts = [], []
+    for slot in sorted(SLOTS):
+        identifier = snapshot.get(slot + '_id')
+        if not identifier:
+            continue
+        item = {'slot': slot, 'name': snapshot[slot + '_name'], 'characters': 0,
+                'status': 'unavailable', 'consumed_by': []}
+        try:
+            data = _path(account['id'], identifier).read_bytes()
+            text = extract_text(item['name'], data)
+            item['characters'] = min(len(text), ANALYSIS_LIMIT)
+            item['truncated'] = len(text) > ANALYSIS_LIMIT
+            if text:
+                texts.append(text[:ANALYSIS_LIMIT])
+                item.update(status='extracted', notice='Text extracted; agent consumption is recorded separately.')
+            else:
+                item['notice'] = 'No readable text. Image/scanned documents require OCR, which is not configured.'
+        except (OSError, ValueError) as exc:
+            item['notice'] = str(exc) if isinstance(exc, ValueError) else 'Stored file could not be read. Upload it again.'
+        evidence.append(item)
+    return '\n'.join(texts), evidence
 
 
 def _path(account_id, identifier):
@@ -92,9 +122,9 @@ def store(token, slot, name, data):
             path.write_bytes(data)
             preview = extract_preview(name, data)
             docs.update({slot+'_id': identifier, slot+'_name': name, slot+'_type': suffix[1:].upper(),
-                         slot+'_size': f'{len(data):,} bytes', slot+'_status': 'Processed',
+                         slot+'_size': f'{len(data):,} bytes', slot+'_status': 'Text extracted' if not preview.startswith('No readable text') else 'Text unavailable',
                          slot+'_preview': preview})
-            db.execute('UPDATE users SET documents=? WHERE id=?', (json.dumps(docs), account['id']))
+            db.execute("UPDATE users SET documents=?, results='{}' WHERE id=?", (json.dumps(docs), account['id']))
             db.commit()
         except Exception:
             path.unlink(missing_ok=True)
@@ -124,7 +154,7 @@ def remove(token, slot):
         docs = json.loads(account['documents'])
         identifier = docs.get(slot+'_id')
         docs = {key: value for key, value in docs.items() if not key.startswith(slot+'_')}
-        db.execute('UPDATE users SET documents=? WHERE id=?', (json.dumps(docs), account['id']))
+        db.execute("UPDATE users SET documents=?, results='{}' WHERE id=?", (json.dumps(docs), account['id']))
         db.commit()
         if identifier:
             _path(account['id'], identifier).unlink(missing_ok=True)
